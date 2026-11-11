@@ -17,7 +17,9 @@ import {
   FileText,
   BookOpen,
   MapPin,
-  Users
+  Users,
+  GraduationCap,
+  Megaphone
 } from 'lucide-react';
 import { 
   CYBER_SECURITY_SEM3_TIMETABLE, 
@@ -96,6 +98,26 @@ export const StudentDashboard: React.FC = () => {
           )}
         </div>
       )}
+
+      {/* Official Controller of Examinations Notice Banner */}
+      <div className="rounded-2xl p-4 bg-gradient-to-r from-rose-500/15 via-red-500/10 to-amber-500/15 border-2 border-rose-500/40 text-rose-950 dark:text-rose-100 flex items-center gap-3.5 shadow-sm">
+        <div className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-md">
+          <Megaphone className="w-5 h-5 animate-bounce" />
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-rose-600 text-white">
+              Official Examination Notice
+            </span>
+            <span className="text-[11px] font-mono font-bold text-rose-600 dark:text-rose-400">
+              Office of the Controller of Examinations
+            </span>
+          </div>
+          <p className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white mt-1">
+            3rd internal starts at 8th dec , only 75% attendance students will be able to write the internals
+          </p>
+        </div>
+      </div>
 
       {/* 1. Student Hero Profile Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-campus-800 via-indigo-900 to-slate-900 animate-gradient p-6 sm:p-8 text-white shadow-2xl shadow-campus-900/30">
@@ -367,8 +389,14 @@ export const StudentDashboard: React.FC = () => {
                             {slot.courseName}
                           </p>
                           <div className="flex items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                            <span>👨‍🏫 {slot.faculty}</span>
-                            <span>📍 {slot.room}</span>
+                            <span className="flex items-center gap-1 font-medium">
+                              <GraduationCap className="w-3.5 h-3.5 text-campus-600" />
+                              {slot.faculty}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                              {slot.room}
+                            </span>
                           </div>
                         </div>
                       </div>

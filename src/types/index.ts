@@ -88,6 +88,27 @@ export interface Course {
   room: string;
   scheduleDayTime: string;
   syllabusUrl?: string;
+  syllabusContent?: string;
+  syllabusType?: 'PDF' | 'IMAGE' | 'TEXT';
+  syllabusFileName?: string;
+}
+
+export interface AssignmentSubmission {
+  id: string;
+  studentId: string;
+  studentName: string;
+  rollNumber: string;
+  studentRoll?: string;
+  submittedAt: string;
+  textContent?: string;
+  submissionNotes?: string;
+  fileName?: string;
+  fileAttachmentName?: string;
+  fileUrl?: string;
+  obtainedMarks?: number;
+  marksAwarded?: number;
+  feedback?: string;
+  status: 'SUBMITTED' | 'GRADED';
 }
 
 export interface Assignment {
@@ -101,7 +122,10 @@ export interface Assignment {
   totalMarks: number;
   obtainedMarks?: number;
   fileAttachment?: string;
+  fileAttachmentName?: string;
   submittedAt?: string;
+  createdBy?: string;
+  submissions?: AssignmentSubmission[];
 }
 
 export type IssueStatus = 'REPORTED' | 'ASSIGNED' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED' | 'REOPENED';
@@ -177,6 +201,64 @@ export interface Club {
   recruitmentOpen: boolean;
   recruitmentDeadline?: string;
   badge: string;
+  adminEmail?: string;
+}
+
+export interface ClubRecruitment {
+  id: string;
+  clubId: string;
+  clubName: string;
+  title: string;
+  roles: string[];
+  description: string;
+  eligibility: string;
+  deadline: string;
+  isOpen: boolean;
+  postedAt: string;
+}
+
+export interface ClubEventItem {
+  id: string;
+  clubId: string;
+  clubName: string;
+  title: string;
+  date: string;
+  time: string;
+  venue: string;
+  description: string;
+  registrationLink?: string;
+  type: 'WORKSHOP' | 'TALK' | 'MEETUP' | 'BOOTCAMP';
+}
+
+export interface ClubHackathonItem {
+  id: string;
+  clubId: string;
+  clubName: string;
+  title: string;
+  date: string;
+  mode: 'ONLINE' | 'OFFLINE' | 'HYBRID';
+  prizePool: string;
+  registrationDeadline: string;
+  problemStatements: string;
+  registrationLink?: string;
+}
+
+export interface ClubApplication {
+  id: string;
+  clubId: string;
+  clubName: string;
+  studentId: string;
+  studentName: string;
+  rollNumber: string;
+  email: string;
+  department: string;
+  semester: number | string;
+  roleApplied: string;
+  githubOrPortfolio: string;
+  whyJoin: string;
+  pastExperience: string;
+  status: 'PENDING' | 'SHORTLISTED' | 'ACCEPTED' | 'REJECTED';
+  submittedAt: string;
 }
 
 export interface Opportunity {
@@ -226,13 +308,16 @@ export interface MarketplaceItem {
   sellerName: string;
   sellerRoll: string;
   type: 'SELL' | 'EXCHANGE' | 'FREE' | 'BORROW';
-  category: 'BOOKS' | 'ELECTRONICS' | 'CALCULATOR' | 'LAB_COAT' | 'FURNITURE';
+  category: 'BOOKS' | 'ELECTRONICS' | 'CALCULATOR' | 'LAB_COAT' | 'FURNITURE' | 'STATIONERY' | 'NOTES';
   title: string;
   description: string;
   price: number; // 0 for free/borrow
   photos: string[];
   status: 'ACTIVE' | 'RESERVED' | 'SOLD';
   createdAt: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  isSold?: boolean;
 }
 
 export interface LostAndFoundItem {
@@ -263,9 +348,9 @@ export interface LibraryBook {
   dueDate?: string;
 }
 
-export type PrintLayout = 'ALL_PAGES' | 'FOUR_UP' | 'EIGHT_UP';
+export type PrintLayout = 'ALL_PAGES' | 'TWO_UP' | 'FOUR_UP' | 'EIGHT_UP';
 export type PrintColorMode = 'COLOR' | 'BLACK_WHITE';
-export type PrintBinding = 'NONE' | 'SPIRAL' | 'LAMINATION' | 'SPIRAL_LAMINATION';
+export type PrintBinding = 'NONE' | 'SPIRAL' | 'LAMINATION' | 'TAPE' | 'SPIRAL_LAMINATION';
 export type PrintOrderStatus = 'PAYMENT_PENDING' | 'PAID' | 'QUEUED' | 'PRINTING' | 'READY_FOR_PICKUP' | 'COMPLETED' | 'CANCELLED';
 
 export interface PrintFile {
@@ -279,10 +364,12 @@ export interface PrintRates {
   colorPerPage: number;
   spiralBinding: number;
   lamination: number;
+  tapeBinding: number;
 }
 
 export interface PrintOrder {
   id: string;
+  shopName?: string;
   studentId: string;
   studentName: string;
   studentRoll: string;
@@ -428,7 +515,7 @@ export interface ExamTimetableItem {
   id: string;
   courseCode: string;
   courseName: string;
-  examType: 'MID_TERM' | 'END_SEM';
+  examType: 'MID_TERM' | 'END_SEM' | 'INTERNALS';
   date: string;
   timeSlot?: string;
   time?: string;

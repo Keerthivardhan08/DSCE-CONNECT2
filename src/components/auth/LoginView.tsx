@@ -22,7 +22,9 @@ import {
   School,
   XCircle,
   UserPlus,
-  LogIn
+  LogIn,
+  Award,
+  BookOpen
 } from 'lucide-react';
 
 export const LoginView: React.FC = () => {
@@ -196,6 +198,8 @@ export const LoginView: React.FC = () => {
                         {acc.role === 'FACILITY_STAFF' && <Wrench className="w-5 h-5" />}
                         {acc.role === 'CAMPUS_ADMIN' && <ShieldAlert className="w-5 h-5" />}
                         {acc.role === 'CLASS_REP' && <School className="w-5 h-5" />}
+                        {acc.role === 'FACULTY' && <BookOpen className="w-5 h-5" />}
+                        {acc.role === 'CLUB_LEADER' && <Award className="w-5 h-5" />}
                       </div>
 
                       <div>
@@ -271,9 +275,6 @@ export const LoginView: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border ${activeAccount.badgeColor}`}>
                         {activeAccount.badge}
-                      </span>
-                      <span className="text-xs text-slate-400 font-semibold">
-                        Primary Route: <code className="text-campus-600 dark:text-campus-400 font-mono">/{activeAccount.primaryTab}</code>
                       </span>
                     </div>
                     <h2 className="text-xl font-black text-slate-900 dark:text-white mt-1">

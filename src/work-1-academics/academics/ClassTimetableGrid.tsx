@@ -9,7 +9,8 @@ import {
   Filter, 
   Info,
   CheckCircle2,
-  BookOpen
+  BookOpen,
+  GraduationCap
 } from 'lucide-react';
 import { 
   CYBER_SECURITY_SEM3_TIMETABLE, 
@@ -197,7 +198,7 @@ export const ClassTimetableGrid: React.FC<ClassTimetableGridProps> = ({ initialB
                   </td>
                   <td className="p-3 border-r border-slate-200 dark:border-slate-800 font-bold">
                     <div className="font-extrabold text-sm text-slate-900 dark:text-white">OS</div>
-                    <div className="text-[10px] text-slate-500">Padmavathi S</div>
+                    <div className="text-[10px] text-slate-500">Dr. Padmavati S</div>
                   </td>
                   <td className="p-3 border-r border-slate-200 dark:border-slate-800 font-bold">
                     <div className="font-extrabold text-sm text-slate-900 dark:text-white">DSA</div>
@@ -212,7 +213,7 @@ export const ClassTimetableGrid: React.FC<ClassTimetableGridProps> = ({ initialB
                   </td>
                   <td className="p-3 border-r border-slate-200 dark:border-slate-800 font-bold">
                     <div className="font-extrabold text-sm text-slate-900 dark:text-white">DDCA</div>
-                    <div className="text-[10px] text-slate-500">Dr. Pallavi Kulkarni</div>
+                    <div className="text-[10px] text-slate-500">Dr. Pallavi Bindagi</div>
                   </td>
                   <td className="p-1 border-r border-slate-200 dark:border-slate-800 bg-orange-500/5 text-orange-800 dark:text-orange-200 font-extrabold text-[10px] uppercase tracking-widest writing-mode-vertical">
                     LUNCH BREAK
@@ -255,14 +256,14 @@ export const ClassTimetableGrid: React.FC<ClassTimetableGridProps> = ({ initialB
                   </td>
                   <td className="p-3 border-r border-slate-200 dark:border-slate-800 font-bold">
                     <div className="font-extrabold text-sm text-slate-900 dark:text-white">OS</div>
-                    <div className="text-[10px] text-slate-500">Padmavathi S</div>
+                    <div className="text-[10px] text-slate-500">Dr. Padmavati S</div>
                   </td>
                   <td className="p-1 border-r border-slate-200 dark:border-slate-800 bg-orange-500/5 text-orange-800 dark:text-orange-200 font-extrabold text-[10px] uppercase tracking-widest writing-mode-vertical">
                     LUNCH BREAK
                   </td>
                   <td className="p-3 border-r border-slate-200 dark:border-slate-800 font-bold">
                     <div className="font-extrabold text-sm text-slate-900 dark:text-white">DDCA</div>
-                    <div className="text-[10px] text-slate-500">Dr. Pallavi Kulkarni</div>
+                    <div className="text-[10px] text-slate-500">Dr. Pallavi Bindagi</div>
                   </td>
                   <td className="p-3 border-r border-slate-200 dark:border-slate-800 font-bold">
                     <div className="font-extrabold text-sm text-slate-900 dark:text-white">DSA</div>
@@ -293,7 +294,7 @@ export const ClassTimetableGrid: React.FC<ClassTimetableGridProps> = ({ initialB
                   </td>
                   <td className="p-3 border-r border-slate-200 dark:border-slate-800 font-bold">
                     <div className="font-extrabold text-sm text-slate-900 dark:text-white">OS</div>
-                    <div className="text-[10px] text-slate-500">Padmavathi S</div>
+                    <div className="text-[10px] text-slate-500">Dr. Padmavati S</div>
                   </td>
                   <td className="p-3 border-r border-slate-200 dark:border-slate-800 font-bold">
                     <div className="font-extrabold text-sm text-slate-900 dark:text-white">PS</div>
@@ -339,7 +340,7 @@ export const ClassTimetableGrid: React.FC<ClassTimetableGridProps> = ({ initialB
                   </td>
                   <td className="p-3 border-r border-slate-200 dark:border-slate-800 font-bold">
                     <div className="font-extrabold text-sm text-slate-900 dark:text-white">DDCA</div>
-                    <div className="text-[10px] text-slate-500">Dr. Pallavi Kulkarni</div>
+                    <div className="text-[10px] text-slate-500">Dr. Pallavi Bindagi</div>
                   </td>
                   <td className="p-1 border-r border-slate-200 dark:border-slate-800 bg-orange-500/5 text-orange-800 dark:text-orange-200 font-extrabold text-[10px] uppercase tracking-widest writing-mode-vertical">
                     LUNCH BREAK
@@ -412,7 +413,7 @@ export const ClassTimetableGrid: React.FC<ClassTimetableGridProps> = ({ initialB
                     <div className="font-extrabold text-sm text-sky-900 dark:text-sky-200">
                       Tutorial DDCA
                     </div>
-                    <div className="text-[10px] text-slate-500">Dr. Pallavi Kulkarni · 9:00 – 11:00 AM</div>
+                    <div className="text-[10px] text-slate-500">Dr. Pallavi Bindagi · 9:00 – 11:00 AM</div>
                   </td>
                   <td className="p-1 border-r border-slate-200 dark:border-slate-800 bg-amber-500/5 text-amber-800 dark:text-amber-200 font-extrabold text-[10px] uppercase tracking-widest writing-mode-vertical">
                     TEA BREAK
@@ -432,7 +433,7 @@ export const ClassTimetableGrid: React.FC<ClassTimetableGridProps> = ({ initialB
                     <div className="font-extrabold text-sm text-sky-900 dark:text-sky-200">
                       Tutorial OS
                     </div>
-                    <div className="text-[10px] text-slate-500">Padmavathi S · 2:00 – 4:00 PM</div>
+                    <div className="text-[10px] text-slate-500">Dr. Padmavati S · 2:00 – 4:00 PM</div>
                   </td>
                   <td className="p-3 font-semibold text-slate-400 bg-slate-50/30 dark:bg-slate-900/30 text-[11px]">
                     — Self Study —
@@ -505,7 +506,8 @@ export const ClassTimetableGrid: React.FC<ClassTimetableGridProps> = ({ initialB
 
                 <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
                   <span className="flex items-center gap-1 font-medium text-slate-700 dark:text-slate-300">
-                    👨‍🏫 {slot.faculty}
+                    <GraduationCap className="w-3.5 h-3.5 text-campus-600 shrink-0" />
+                    <span>{slot.faculty}</span>
                   </span>
                   <span className="flex items-center gap-1 text-[11px] text-slate-400">
                     <MapPin className="w-3 h-3" />
@@ -549,7 +551,7 @@ export const ClassTimetableGrid: React.FC<ClassTimetableGridProps> = ({ initialB
                 <td className="p-2.5 text-slate-600 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">Dr. K V Nagmani</td>
                 <td className="p-2.5 font-mono font-bold text-campus-600 dark:text-campus-400 pl-4">1BCY305</td>
                 <td className="p-2.5 font-medium text-slate-900 dark:text-white">Digital Design & Computer Architecture (DDCA)</td>
-                <td className="p-2.5 text-slate-600 dark:text-slate-300">Dr. Pallavi Kulkarni</td>
+                <td className="p-2.5 text-slate-600 dark:text-slate-300">Dr. Pallavi Bindagi</td>
               </tr>
               <tr>
                 <td className="p-2.5 font-mono font-bold text-campus-600 dark:text-campus-400">1BCY302</td>
@@ -562,10 +564,10 @@ export const ClassTimetableGrid: React.FC<ClassTimetableGridProps> = ({ initialB
               <tr>
                 <td className="p-2.5 font-mono font-bold text-campus-600 dark:text-campus-400">1BCY303</td>
                 <td className="p-2.5 font-medium text-slate-900 dark:text-white">Operating System & Linux System Programming (OS)</td>
-                <td className="p-2.5 text-slate-600 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">Padmavathi S</td>
+                <td className="p-2.5 text-slate-600 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">Dr. Padmavati S</td>
                 <td className="p-2.5 font-mono font-bold text-campus-600 dark:text-campus-400 pl-4">1BCYL307A</td>
                 <td className="p-2.5 font-medium text-slate-900 dark:text-white">Cyber Security and its Applications</td>
-                <td className="p-2.5 text-slate-600 dark:text-slate-300">Nida Afreen Rizvi</td>
+                <td className="p-2.5 text-slate-600 dark:text-slate-300">Dr. Nida Afreen Rizvi</td>
               </tr>
               <tr>
                 <td className="p-2.5 font-mono font-bold text-campus-600 dark:text-campus-400">1BCY304</td>
@@ -583,12 +585,12 @@ export const ClassTimetableGrid: React.FC<ClassTimetableGridProps> = ({ initialB
         <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 space-y-1">
           <span className="font-bold text-slate-700 dark:text-slate-300 block">Faculty Initials Key:</span>
           <div className="flex flex-wrap gap-x-4 gap-y-1">
-            <span><strong>PS:</strong> Padmavathi S</span>
+            <span><strong>PS:</strong> Dr. Padmavati S</span>
             <span><strong>RK:</strong> Dr. Rakshitha Kiran P</span>
             <span><strong>MT:</strong> Dr. Mohd. Tajuddin</span>
             <span><strong>VHC:</strong> Dr. Vinod H C</span>
-            <span><strong>NAR:</strong> Nida Afreen Rizvi</span>
-            <span><strong>PK:</strong> Dr. Pallavi Kulkarni</span>
+            <span><strong>NAR:</strong> Dr. Nida Afreen Rizvi</span>
+            <span><strong>PB:</strong> Dr. Pallavi Bindagi</span>
             <span><strong>KVN:</strong> Dr. K V Nagmani</span>
             <span><strong>ML / VD / PB / MK:</strong> Computing Labs Staff</span>
           </div>

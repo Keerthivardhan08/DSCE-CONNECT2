@@ -25,15 +25,13 @@ export const ROLE_ALLOWED_TABS: Record<UserRole, ActiveNavTab[]> = {
     'marketplace', 'lostfound', 'library', 'hostel', 'ask_ai'
   ],
   PRINT_ADMIN: [
-    'print_admin', 'println', 'issues', 'ask_ai'
+    'print_admin', 'println', 'ask_ai'
   ],
   FACILITY_STAFF: [
-    'issues', 'dashboard', 'hostel', 'ask_ai', 'people'
+    'issues', 'ask_ai', 'people'
   ],
   CAMPUS_ADMIN: [
-    'admin', 'issues', 'dashboard', 'print_admin', 'println', 
-    'events', 'clubs', 'opportunities', 'projects', 'people', 
-    'marketplace', 'lostfound', 'library', 'hostel', 'ask_ai', 'academics'
+    'admin', 'issues', 'opportunities', 'ask_ai'
   ],
   CLASS_REP: [
     'dashboard', 'academics', 'println', 'issues', 'events', 
@@ -41,9 +39,7 @@ export const ROLE_ALLOWED_TABS: Record<UserRole, ActiveNavTab[]> = {
     'marketplace', 'lostfound', 'library', 'hostel', 'ask_ai'
   ],
   CLUB_LEADER: [
-    'events', 'clubs', 'dashboard', 'println', 'issues', 
-    'opportunities', 'projects', 'people', 'marketplace', 
-    'lostfound', 'library', 'hostel', 'ask_ai'
+    'clubs', 'events', 'opportunities', 'projects', 'people', 'ask_ai'
   ],
   FACULTY: [
     'academics', 'dashboard', 'issues', 'library', 'people', 'ask_ai'
@@ -67,7 +63,7 @@ export const ROLE_DEFAULT_TAB: Record<UserRole, ActiveNavTab> = {
   FACILITY_STAFF: 'issues',
   CAMPUS_ADMIN: 'admin',
   CLASS_REP: 'dashboard',
-  CLUB_LEADER: 'events',
+  CLUB_LEADER: 'clubs',
   FACULTY: 'academics',
   HOSTEL_STAFF: 'hostel',
   LIBRARIAN: 'library',

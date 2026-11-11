@@ -1,733 +1,755 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { 
-  ShieldAlert, 
+  ShieldCheck, 
   Send, 
-  Wrench, 
-  BarChart3, 
   AlertTriangle, 
   CheckCircle2, 
   Clock, 
   Megaphone, 
-  Archive, 
   Flame, 
   Building2, 
-  MapPin, 
-  Lock, 
+  Briefcase,
+  GraduationCap,
   Sparkles, 
-  CheckCircle, 
-  AlertOctagon, 
   Layers,
-  RotateCcw,
-  UserCheck,
-  ShieldCheck,
-  FileText,
-  History,
-  Check,
+  ChevronRight,
+  PlusCircle,
+  ExternalLink,
+  Award,
+  TrendingUp,
   X,
-  Eye,
-  Flag,
-  Utensils
+  Check,
+  Search,
+  Filter
 } from 'lucide-react';
-import { CampusIssue, OfficialAnnouncement, UserProfile } from '../../types';
-import { UserAvatar } from '../../components/common/UserAvatar';
+import { CampusIssue, Opportunity } from '../../types';
 
 export const AdminPortalView: React.FC = () => {
   const { 
     announcements, 
     broadcastAnnouncement, 
     campusIssues, 
-    pendingVerifications, 
-    verifyStudentId,
-    itemReports,
-    moderateItemReport,
-    messReports,
-    resolveMessReport,
-    auditLogs,
+    updateIssueStatus,
+    opportunities,
+    toggleSaveOpportunity,
     showToast 
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'ID_VERIFICATIONS' | 'MODERATION' | 'AUDIT_LOGS'>('OVERVIEW');
+  // Column view selector for responsive screens
+  const [activeColumn, setActiveColumn] = useState<'ALL' | 'ADMIN_SLA' | 'ISSUES_SLA' | 'OPPORTUNITIES'>('ALL');
 
-  // Broadcast state
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [category, setCategory] = useState<'CRITICAL' | 'ACADEMIC' | 'HOSTEL' | 'EVENTS'>('CRITICAL');
-  const [issueFilter, setIssueFilter] = useState<'ALL' | 'EMERGENCY' | 'ESCALATED' | 'IN_PROGRESS'>('ALL');
+  // Executive Broadcast Form State
+  const [broadcastTitle, setBroadcastTitle] = useState('');
+  const [broadcastContent, setBroadcastContent] = useState('');
+  const [broadcastCategory, setBroadcastCategory] = useState<'CRITICAL' | 'ACADEMIC' | 'HOSTEL' | 'EVENTS'>('CRITICAL');
 
-  // Preview ID Card Modal
-  const [inspectingUser, setInspectingUser] = useState<UserProfile | null>(null);
+  // Issue filter inside Column 2
+  const [issueFilter, setIssueFilter] = useState<'ALL' | 'EMERGENCY' | 'IN_PROGRESS' | 'RESOLVED'>('ALL');
 
-  // Stats calculation
+  // Opportunities filter inside Column 3
+  const [oppTypeFilter, setOppTypeFilter] = useState<string>('ALL');
+  const [showAddOppModal, setShowAddOppModal] = useState(false);
+  const [newOppTitle, setNewOppTitle] = useState('');
+  const [newOppOrg, setNewOppOrg] = useState('');
+  const [newOppType, setNewOppType] = useState<Opportunity['type']>('INTERNSHIP');
+  const [newOppStipend, setNewOppStipend] = useState('');
+  const [newOppDeadline, setNewOppDeadline] = useState('');
+  const [newOppCgpa, setNewOppCgpa] = useState('7.5');
+  const [newOppSkills, setNewOppSkills] = useState('Python, Data Structures, Git');
+  const [newOppDesc, setNewOppDesc] = useState('');
+
+  // Local state for newly added opportunities
+  const [localOpportunities, setLocalOpportunities] = useState<Opportunity[]>(opportunities);
+
+  // Synchronize when context changes
+  React.useEffect(() => {
+    setLocalOpportunities(opportunities);
+  }, [opportunities]);
+
+  // SLA calculations
   const totalIssues = campusIssues.length;
-  const resolvedCount = useMemo(
+  const resolvedIssues = useMemo(
     () => campusIssues.filter(i => i.status === 'RESOLVED' || i.status === 'CLOSED').length,
     [campusIssues]
   );
-  const inProgressCount = useMemo(
-    () => campusIssues.filter(i => i.status === 'IN_PROGRESS').length,
-    [campusIssues]
-  );
-  const activeAnnouncementsCount = announcements.length;
-  const resolutionRate = totalIssues > 0 ? Math.round((resolvedCount / totalIssues) * 100) : 100;
-  
-  const emergencyCount = useMemo(
+  const slaComplianceRate = totalIssues > 0 ? Math.round((resolvedIssues / totalIssues) * 100) : 98;
+  const emergencyIssuesCount = useMemo(
     () => campusIssues.filter(i => i.urgency === 'EMERGENCY' && i.status !== 'RESOLVED' && i.status !== 'CLOSED').length,
     [campusIssues]
   );
 
-  const escalatedCount = useMemo(
-    () => campusIssues.filter(i => (i.reopenCount > 0 || i.status === 'REOPENED') && i.status !== 'CLOSED').length,
-    [campusIssues]
-  );
-
-  // Open issues (non-resolved)
-  const openIssues = useMemo(() => {
+  const filteredIssues = useMemo(() => {
     return campusIssues.filter(i => {
-      const isNotResolved = i.status !== 'RESOLVED' && i.status !== 'CLOSED';
-      if (!isNotResolved) return false;
-      if (issueFilter === 'EMERGENCY') return i.urgency === 'EMERGENCY';
-      if (issueFilter === 'ESCALATED') return i.status === 'REOPENED' || i.reopenCount > 0;
-      if (issueFilter === 'IN_PROGRESS') return i.status === 'IN_PROGRESS';
+      if (issueFilter === 'EMERGENCY') return i.urgency === 'EMERGENCY' && i.status !== 'RESOLVED';
+      if (issueFilter === 'IN_PROGRESS') return i.status === 'IN_PROGRESS' || i.status === 'ASSIGNED';
+      if (issueFilter === 'RESOLVED') return i.status === 'RESOLVED' || i.status === 'CLOSED';
       return true;
     });
   }, [campusIssues, issueFilter]);
 
+  const filteredOpportunities = useMemo(() => {
+    if (oppTypeFilter === 'ALL') return localOpportunities;
+    return localOpportunities.filter(o => o.type === oppTypeFilter);
+  }, [localOpportunities, oppTypeFilter]);
+
   const handleBroadcast = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !content.trim()) return;
-    
-    broadcastAnnouncement(title, content, category);
-    showToast(`Official ${category} broadcast sent to all student dashboards!`);
-    setTitle('');
-    setContent('');
+    if (!broadcastTitle.trim() || !broadcastContent.trim()) return;
+
+    broadcastAnnouncement(broadcastTitle, broadcastContent, broadcastCategory);
+    showToast(`Executive circular "${broadcastTitle}" broadcasted successfully!`);
+    setBroadcastTitle('');
+    setBroadcastContent('');
   };
 
-  const getCategoryTheme = (cat: 'CRITICAL' | 'ACADEMIC' | 'HOSTEL' | 'EVENTS') => {
-    switch (cat) {
-      case 'CRITICAL':
-        return {
-          pill: 'bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300 border-rose-300 dark:border-rose-800',
-          border: 'border-l-rose-500',
-          dot: 'bg-rose-500'
-        };
-      case 'ACADEMIC':
-        return {
-          pill: 'bg-blue-100 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border-blue-300 dark:border-blue-800',
-          border: 'border-l-blue-500',
-          dot: 'bg-blue-500'
-        };
-      case 'HOSTEL':
-        return {
-          pill: 'bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border-amber-300 dark:border-amber-800',
-          border: 'border-l-amber-500',
-          dot: 'bg-amber-500'
-        };
-      case 'EVENTS':
-        return {
-          pill: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800',
-          border: 'border-l-emerald-500',
-          dot: 'bg-emerald-500'
-        };
-    }
-  };
+  const handleAddOpportunity = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newOppTitle.trim() || !newOppOrg.trim()) return;
 
-  const getUrgencyBadge = (urgency: CampusIssue['urgency']) => {
-    switch (urgency) {
-      case 'EMERGENCY':
-        return (
-          <span className="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-0.5 rounded-full font-black bg-rose-500 text-white shadow-xs animate-pulse">
-            <Flame className="w-3 h-3" /> EMERGENCY
-          </span>
-        );
-      case 'HIGH':
-        return (
-          <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-amber-500 text-white">
-            HIGH
-          </span>
-        );
-      case 'MEDIUM':
-        return (
-          <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
-            MEDIUM
-          </span>
-        );
-      case 'LOW':
-        return (
-          <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-            LOW
-          </span>
-        );
-    }
-  };
+    const newOpp: Opportunity = {
+      id: `opp_${Date.now()}`,
+      title: newOppTitle,
+      organization: newOppOrg,
+      type: newOppType,
+      stipendOrPrize: newOppStipend || 'Competitive Package',
+      departmentEligibility: ['CSE', 'ISE', 'Cyber Security', 'AIML'],
+      minCgpa: parseFloat(newOppCgpa) || 7.0,
+      deadline: newOppDeadline || 'Dec 30, 2026',
+      skills: newOppSkills.split(',').map(s => s.trim()),
+      description: newOppDesc || 'Executive Dean-approved opportunity for eligible DSCE students.',
+      isSaved: false,
+      applicationStatus: 'NOT_APPLIED'
+    };
 
-  const getStatusBadge = (status: CampusIssue['status']) => {
-    switch (status) {
-      case 'REPORTED':
-        return (
-          <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300 border border-amber-300/40">
-            REPORTED
-          </span>
-        );
-      case 'ASSIGNED':
-        return (
-          <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300 border border-sky-300/40">
-            ASSIGNED
-          </span>
-        );
-      case 'IN_PROGRESS':
-        return (
-          <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-300/40">
-            IN PROGRESS
-          </span>
-        );
-      case 'REOPENED':
-        return (
-          <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border border-rose-300/40">
-            REOPENED
-          </span>
-        );
-      case 'RESOLVED':
-      case 'CLOSED':
-        return (
-          <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-            RESOLVED
-          </span>
-        );
-    }
+    setLocalOpportunities(prev => [newOpp, ...prev]);
+    setShowAddOppModal(false);
+    showToast(`Opportunity "${newOppTitle}" posted by Dean's Office!`);
+    setNewOppTitle('');
+    setNewOppOrg('');
+    setNewOppDesc('');
   };
 
   return (
     <div className="space-y-6">
       
-      {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-red-600 via-rose-600 to-pink-700 animate-gradient text-white p-6 sm:p-8 shadow-2xl">
-        <div className="relative z-10 space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-bold text-rose-100">
-              <Lock className="w-3.5 h-3.5 text-rose-200" />
-              <span>SUPER ADMIN & CAMPUS AUTHORITY CONSOLE</span>
+      {/* Dean Executive Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 sm:p-7 shadow-xl border border-indigo-900/40">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-[11px] font-bold text-indigo-200">
+              <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
+              <span>OFFICE OF THE DEAN & REGISTRAR</span>
             </div>
-
-            <span className="text-xs text-rose-200/90 font-medium">
-              Office of the Dean & Registrar
-            </span>
-          </div>
-
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2">
-              <span>Campus Admin & Governance Suite</span>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+              Executive Governance & SLA Oversight
             </h1>
-            <p className="text-xs sm:text-sm text-rose-100/90 mt-1 max-w-2xl leading-relaxed">
-              Verify student identity cards, review reported marketplace posts and mess food escalations, inspect immutable audit logs, and broadcast emergency circulars.
+            <p className="text-xs text-indigo-200/80 max-w-xl">
+              Dayananda Sagar College of Engineering — Executive SLA controls, campus operations SLA resolution, and corporate career opportunities.
             </p>
           </div>
 
-          {/* 4 Stat Pods */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
-            <div className="bg-white/10 backdrop-blur-md border border-white/15 px-4 py-3.5 rounded-2xl text-center hover:bg-white/15 transition group">
-              <div className="flex items-center justify-center gap-1.5 text-rose-200 text-xs font-semibold mb-0.5">
-                <UserCheck className="w-4 h-4 text-amber-300" />
-                <span>Pending IDs</span>
-              </div>
-              <div className="text-2xl font-black text-white">{pendingVerifications.length}</div>
-              <div className="text-[10px] text-amber-200 font-bold">Awaiting Review</div>
+          <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10 shrink-0">
+            <div className="text-center px-2">
+              <div className="text-2xl font-black text-emerald-400">{slaComplianceRate}%</div>
+              <div className="text-[10px] text-slate-300 font-bold uppercase tracking-wider">Campus SLA</div>
             </div>
-
-            <div className="bg-white/10 backdrop-blur-md border border-white/15 px-4 py-3.5 rounded-2xl text-center hover:bg-white/15 transition group">
-              <div className="flex items-center justify-center gap-1.5 text-rose-200 text-xs font-semibold mb-0.5">
-                <Flag className="w-4 h-4 text-rose-300" />
-                <span>Flagged Items</span>
-              </div>
-              <div className="text-2xl font-black text-white">{itemReports.filter(r => r.status === 'PENDING').length}</div>
-              <div className="text-[10px] text-rose-200/80">Moderation Queue</div>
+            <div className="w-px h-8 bg-white/20" />
+            <div className="text-center px-2">
+              <div className="text-2xl font-black text-rose-400">{emergencyIssuesCount}</div>
+              <div className="text-[10px] text-slate-300 font-bold uppercase tracking-wider">Urgent Breaches</div>
             </div>
-
-            <div className="bg-white/10 backdrop-blur-md border border-white/15 px-4 py-3.5 rounded-2xl text-center hover:bg-white/15 transition group">
-              <div className="flex items-center justify-center gap-1.5 text-rose-200 text-xs font-semibold mb-0.5">
-                <Utensils className="w-4 h-4 text-orange-300" />
-                <span>Mess Issues</span>
-              </div>
-              <div className="text-2xl font-black text-white">{messReports.length}</div>
-              <div className="text-[10px] text-rose-200/80">Chief Warden Feed</div>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-md border border-white/15 px-4 py-3.5 rounded-2xl text-center hover:bg-white/15 transition group">
-              <div className="flex items-center justify-center gap-1.5 text-emerald-200 text-xs font-semibold mb-0.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-300" />
-                <span>Resolution Rate</span>
-              </div>
-              <div className="text-2xl font-black text-white">{resolutionRate}%</div>
-              <div className="text-[10px] text-emerald-200 font-bold">{resolvedCount} / {totalIssues} Closed</div>
+            <div className="w-px h-8 bg-white/20" />
+            <div className="text-center px-2">
+              <div className="text-2xl font-black text-indigo-300">{localOpportunities.length}</div>
+              <div className="text-[10px] text-slate-300 font-bold uppercase tracking-wider">Opportunities</div>
             </div>
           </div>
         </div>
 
-        {/* Tab Bar */}
-        <div className="mt-6 pt-4 border-t border-white/15 flex flex-wrap gap-2 text-xs font-bold">
-          <button
-            onClick={() => setActiveTab('OVERVIEW')}
-            className={`px-4 py-2 rounded-xl transition flex items-center gap-1.5 ${
-              activeTab === 'OVERVIEW' ? 'bg-white text-rose-900 shadow-md' : 'bg-white/10 hover:bg-white/20 text-white'
-            }`}
-          >
-            <BarChart3 className="w-4 h-4" />
-            <span>Overview & Broadcasts</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('ID_VERIFICATIONS')}
-            className={`px-4 py-2 rounded-xl transition flex items-center gap-1.5 ${
-              activeTab === 'ID_VERIFICATIONS' ? 'bg-white text-rose-900 shadow-md' : 'bg-white/10 hover:bg-white/20 text-white'
-            }`}
-          >
-            <UserCheck className="w-4 h-4" />
-            <span>Student ID Approvals ({pendingVerifications.length})</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('MODERATION')}
-            className={`px-4 py-2 rounded-xl transition flex items-center gap-1.5 ${
-              activeTab === 'MODERATION' ? 'bg-white text-rose-900 shadow-md' : 'bg-white/10 hover:bg-white/20 text-white'
-            }`}
-          >
-            <Flag className="w-4 h-4" />
-            <span>Report Moderation ({itemReports.length + messReports.length})</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('AUDIT_LOGS')}
-            className={`px-4 py-2 rounded-xl transition flex items-center gap-1.5 ${
-              activeTab === 'AUDIT_LOGS' ? 'bg-white text-rose-900 shadow-md' : 'bg-white/10 hover:bg-white/20 text-white'
-            }`}
-          >
-            <History className="w-4 h-4" />
-            <span>System Audit Logs ({auditLogs.length})</span>
-          </button>
+        {/* View Switcher for smaller screens */}
+        <div className="flex items-center gap-1.5 pt-4 mt-4 border-t border-white/10 text-xs font-bold xl:hidden overflow-x-auto">
+          <span className="text-[10px] text-indigo-300 uppercase tracking-wider mr-2">Show Column:</span>
+          {[
+            { id: 'ALL', label: 'All 3 Columns' },
+            { id: 'ADMIN_SLA', label: '1. Executive Admin & SLA' },
+            { id: 'ISSUES_SLA', label: '2. Campus Issues & SLA' },
+            { id: 'OPPORTUNITIES', label: '3. Opportunities' },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveColumn(tab.id as any)}
+              className={`px-3 py-1.5 rounded-xl transition whitespace-nowrap ${
+                activeColumn === tab.id
+                  ? 'bg-indigo-600 text-white shadow-xs'
+                  : 'bg-white/10 text-white/80 hover:bg-white/20'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* TAB 1: OVERVIEW & BROADCASTS */}
-      {activeTab === 'OVERVIEW' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            {/* Broadcast Form (5 cols) */}
-            <div className="lg:col-span-5 relative overflow-hidden rounded-3xl bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/20 dark:border-slate-700/40 p-6 shadow-xl space-y-4">
+      {/* 3 COLUMNS ONLY */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+        {/* COLUMN 1: EXECUTIVE ADMIN & SLA */}
+        {(activeColumn === 'ALL' || activeColumn === 'ADMIN_SLA') && (
+          <div className="space-y-5 flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-2">
-                <Megaphone className="w-5 h-5 text-rose-600" />
-                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                  Broadcast Campus Notice
-                </h3>
+                <div className="w-8 h-8 rounded-xl bg-indigo-100 dark:bg-indigo-950 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-black">
+                  1
+                </div>
+                <div>
+                  <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
+                    Executive Admin & SLA
+                  </h2>
+                  <p className="text-[11px] text-slate-500">Governance policies & circular broadcast</p>
+                </div>
               </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">
+                Dean Console
+              </span>
+            </div>
+
+            {/* SLA Key Performance Indicators */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                  <Clock className="w-3 h-3 text-indigo-500" /> Avg SLA Turnaround
+                </span>
+                <p className="text-xl font-black text-slate-900 dark:text-white mt-1">4.2 hrs</p>
+                <p className="text-[10px] text-emerald-600 font-semibold mt-0.5">Within 8hr campus quota</p>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                  <TrendingUp className="w-3 h-3 text-emerald-500" /> Resolution Target
+                </span>
+                <p className="text-xl font-black text-emerald-600 mt-1">96.4%</p>
+                <p className="text-[10px] text-slate-500 font-semibold mt-0.5">Target: 95.0%</p>
+              </div>
+            </div>
+
+            {/* Department SLA Matrix */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 space-y-3 shadow-xs">
+              <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <Building2 className="w-3.5 h-3.5 text-indigo-600" />
+                Departmental SLA Health
+              </span>
+
+              <div className="space-y-2.5">
+                {[
+                  { dept: 'Electrical & Power Supply', health: 98, status: 'Optimal' },
+                  { dept: 'Network & WiFi Infrastructure', health: 94, status: 'Good' },
+                  { dept: 'Classroom & Lab Facilities', health: 96, status: 'Optimal' },
+                  { dept: 'Water & Sanitation Services', health: 91, status: 'Monitoring' },
+                ].map((item, idx) => (
+                  <div key={idx} className="space-y-1">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="font-semibold text-slate-700 dark:text-slate-300">{item.dept}</span>
+                      <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">{item.health}% SLA</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full ${item.health >= 95 ? 'bg-emerald-500' : 'bg-amber-500'}`} 
+                        style={{ width: `${item.health}%` }} 
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Broadcast Executive Circular */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 space-y-3 shadow-xs">
+              <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <Megaphone className="w-3.5 h-3.5 text-rose-600" />
+                Broadcast Executive Circular
+              </span>
 
               <form onSubmit={handleBroadcast} className="space-y-3">
                 <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                    Announcement Title *
-                  </label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase">Circular Title *</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Mandatory Hall Ticket Biometric Scanning"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none"
+                    placeholder="e.g. Official Notice: 3rd Internal Schedule..."
+                    value={broadcastTitle}
+                    onChange={(e) => setBroadcastTitle(e.target.value)}
+                    className="w-full text-xs p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 mt-1 outline-none font-semibold"
                   />
                 </div>
 
-                <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                    Notice Category
-                  </label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as any)}
-                    className="w-full text-xs p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none font-bold"
-                  >
-                    <option value="CRITICAL">Critical Emergency (Immediate Alert)</option>
-                    <option value="ACADEMIC">Academic / Examination Circular</option>
-                    <option value="HOSTEL">Hostel & Mess Administration</option>
-                    <option value="EVENTS">Campus Events & Fest Notices</option>
-                  </select>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase">Priority *</label>
+                    <select
+                      value={broadcastCategory}
+                      onChange={(e) => setBroadcastCategory(e.target.value as any)}
+                      className="w-full text-xs p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 mt-1 font-semibold"
+                    >
+                      <option value="CRITICAL">🔴 Urgent / Critical</option>
+                      <option value="ACADEMIC">📘 Academic</option>
+                      <option value="EVENTS">🎉 Events / General</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase">Target Audience</label>
+                    <div className="text-xs p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 font-semibold mt-1">
+                      All Students & Faculty
+                    </div>
+                  </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                    Full Content & Directives *
-                  </label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase">Official Notice Content *</label>
                   <textarea
                     required
-                    rows={4}
-                    placeholder="Provide full instructions, deadlines, or safety protocols..."
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none"
+                    rows={3}
+                    placeholder="Enter official circular content dispatched to student dashboard..."
+                    value={broadcastContent}
+                    onChange={(e) => setBroadcastContent(e.target.value)}
+                    className="w-full text-xs p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 mt-1 outline-none"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold text-xs shadow-md shadow-rose-600/25 flex items-center justify-center gap-1.5"
+                  className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-1.5"
                 >
                   <Send className="w-3.5 h-3.5" />
-                  <span>Transmit Broadcast Notice</span>
+                  <span>Dispatch Executive Notice</span>
                 </button>
               </form>
             </div>
 
-            {/* Published Notices (7 cols) */}
-            <div className="lg:col-span-7 space-y-3">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Live Broadcast Feed ({announcements.length} Published)
-              </h3>
-              <div className="space-y-3 max-h-[460px] overflow-y-auto">
-                {announcements.map(ann => {
-                  const theme = getCategoryTheme(ann.category);
-                  return (
-                    <div 
-                      key={ann.id}
-                      className={`p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-2 border-l-4 ${theme.border}`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full border ${theme.pill}`}>
-                          {ann.category}
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-medium">{ann.publishedAt}</span>
-                      </div>
-                      <h4 className="text-sm font-bold text-slate-900 dark:text-white">{ann.title}</h4>
-                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{ann.content}</p>
-                      <span className="text-[10px] text-slate-400 block pt-1">Signed: {ann.source}</span>
+            {/* Pinned Circulars list */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 space-y-2.5 shadow-xs flex-1">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Live Dispatched Circulars ({announcements.length})
+              </span>
+              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                {announcements.slice(0, 4).map(item => (
+                  <div key={item.id} className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-1">{item.title}</span>
+                      <span className="text-[9px] font-mono text-slate-400">{item.publishedAt}</span>
                     </div>
-                  );
-                })}
+                    <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">{item.content}</p>
+                  </div>
+                ))}
               </div>
             </div>
-
           </div>
+        )}
 
-          {/* Infrastructure Maintenance SLA Monitor */}
-          <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-slate-700/40 p-6 shadow-xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+        {/* COLUMN 2: CAMPUS ISSUES & SLA */}
+        {(activeColumn === 'ALL' || activeColumn === 'ISSUES_SLA') && (
+          <div className="space-y-5 flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-2">
-                <Wrench className="w-5 h-5 text-indigo-600" />
-                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                  Campus Facilities & Maintenance Tickets SLA Queue
-                </h3>
-              </div>
-              <span className="text-xs font-bold text-slate-500">{openIssues.length} Active Tickets</span>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="text-[10px] font-black uppercase text-slate-400 border-b border-slate-100 dark:border-slate-800">
-                    <th className="pb-2">Issue</th>
-                    <th className="pb-2">Location</th>
-                    <th className="pb-2">Urgency</th>
-                    <th className="pb-2">Status</th>
-                    <th className="pb-2">Assignee</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {openIssues.slice(0, 5).map(issue => (
-                    <tr key={issue.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                      <td className="py-2.5 font-bold text-slate-900 dark:text-white">{issue.title}</td>
-                      <td className="py-2.5 text-slate-600 dark:text-slate-300">{issue.locationBuilding}</td>
-                      <td className="py-2.5">{getUrgencyBadge(issue.urgency)}</td>
-                      <td className="py-2.5">{getStatusBadge(issue.status)}</td>
-                      <td className="py-2.5 text-slate-500">{issue.assignedTo || 'Unassigned'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 2: STUDENT ID CARD APPROVAL QUEUE */}
-      {activeTab === 'ID_VERIFICATIONS' && (
-        <div className="space-y-6">
-          <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">Institutional Identity Verification Queue</h3>
-            <p className="text-xs text-slate-500">
-              Review physical student ID cards submitted during account registration. Approving marks the account VERIFIED and grants access to library loans and campus amenities.
-            </p>
-          </div>
-
-          {pendingVerifications.length === 0 ? (
-            <div className="py-16 text-center rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
-              <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto" />
-              <h4 className="text-base font-bold text-slate-900 dark:text-white">All Student ID Submissions Cleared!</h4>
-              <p className="text-xs text-slate-500">Zero pending student verification cards in the approval queue.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {pendingVerifications.map(student => (
-                <div 
-                  key={student.id}
-                  className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-4 flex flex-col justify-between"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <UserAvatar name={student.name} color={student.avatarColor} size="lg" />
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-base font-bold text-slate-900 dark:text-white">{student.name}</h4>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300">
-                              PENDING
-                            </span>
-                          </div>
-                          <span className="text-xs font-mono font-bold text-rose-600 dark:text-rose-400">USN: {student.rollNumber}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="text-xs text-slate-600 dark:text-slate-300 space-y-1">
-                      <div><strong>Department:</strong> {student.department}</div>
-                      <div><strong>Batch:</strong> Class of {student.batchYear} • Semester {student.semester}</div>
-                      <div><strong>Official Email:</strong> {student.email}</div>
-                    </div>
-
-                    {/* Uploaded ID Card Preview */}
-                    <div className="space-y-1 pt-2">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Uploaded Student ID Card</span>
-                      <div 
-                        onClick={() => setInspectingUser(student)}
-                        className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-950 cursor-pointer relative group"
-                      >
-                        <img 
-                          src={student.idCardUrl || 'https://placehold.co/600x380/1e293b/ffffff.png?text=STUDENT+ID+CARD+-+' + encodeURIComponent(student.rollNumber)} 
-                          alt="Student ID Preview" 
-                          className="w-full h-44 object-contain bg-slate-900 group-hover:opacity-90 transition"
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-slate-900/60 transition">
-                          <span className="text-xs text-white font-bold flex items-center gap-1.5 bg-black/60 px-3 py-1.5 rounded-xl backdrop-blur-sm">
-                            <Eye className="w-3.5 h-3.5" /> Click to Inspect Full ID
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Approve / Reject Controls */}
-                  <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
-                    <button
-                      onClick={() => verifyStudentId(student.id, false, 'Invalid ID card or unreadable photo')}
-                      className="px-4 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition flex items-center gap-1"
-                    >
-                      <X className="w-4 h-4" />
-                      <span>Reject</span>
-                    </button>
-                    <button
-                      onClick={() => verifyStudentId(student.id, true, `Verified identity against college master roll ${student.rollNumber}`)}
-                      className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/30 transition flex items-center gap-1.5"
-                    >
-                      <Check className="w-4 h-4" />
-                      <span>Approve Identity</span>
-                    </button>
-                  </div>
+                <div className="w-8 h-8 rounded-xl bg-rose-100 dark:bg-rose-950 flex items-center justify-center text-rose-600 dark:text-rose-400 font-black">
+                  2
                 </div>
+                <div>
+                  <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
+                    Campus Issues & SLA
+                  </h2>
+                  <p className="text-[11px] text-slate-500">Incident resolution tracking & SLA breaches</p>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400">
+                {campusIssues.length} Active Tickets
+              </span>
+            </div>
+
+            {/* Filter buttons */}
+            <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs text-xs">
+              {[
+                { id: 'ALL', label: 'All Tickets' },
+                { id: 'EMERGENCY', label: '🔥 Urgent' },
+                { id: 'IN_PROGRESS', label: '⚡ In Progress' },
+                { id: 'RESOLVED', label: '✓ Closed' },
+              ].map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => setIssueFilter(f.id as any)}
+                  className={`flex-1 py-1.5 rounded-xl font-bold transition text-center ${
+                    issueFilter === f.id
+                      ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  {f.label}
+                </button>
               ))}
             </div>
-          )}
-        </div>
-      )}
 
-      {/* TAB 3: REPORT MODERATION QUEUE */}
-      {activeTab === 'MODERATION' && (
-        <div className="space-y-6">
-          <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">Community & Dining Moderation Queue</h3>
-            <p className="text-xs text-slate-500">Flagged marketplace/lost & found posts and escalated hostel mess food violations.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Item Reports */}
-            <div className="space-y-4">
-              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Flag className="w-4 h-4 text-rose-500" />
-                <span>Flagged Item Posts ({itemReports.length})</span>
-              </h4>
-
-              {itemReports.length === 0 ? (
-                <p className="text-xs text-slate-400 py-6 text-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                  Zero flagged listings.
-                </p>
+            {/* Tickets list */}
+            <div className="space-y-3 flex-1 overflow-y-auto max-h-[800px] pr-1">
+              {filteredIssues.length === 0 ? (
+                <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+                  <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto mb-2" />
+                  <p className="text-xs font-bold text-slate-700 dark:text-slate-300">All tickets clear under this filter</p>
+                  <p className="text-[10px] text-slate-400">Campus SLA compliance is well maintained.</p>
+                </div>
               ) : (
-                itemReports.map(rep => (
-                  <div key={rep.id} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300">
-                        {rep.itemType} REPORT
-                      </span>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        rep.status === 'ACTIONED' ? 'bg-emerald-100 text-emerald-700' :
-                        rep.status === 'DISMISSED' ? 'bg-slate-100 text-slate-600' :
-                        'bg-amber-100 text-amber-700'
-                      }`}>
-                        {rep.status}
-                      </span>
-                    </div>
+                filteredIssues.map(issue => {
+                  const isEmergency = issue.urgency === 'EMERGENCY';
+                  const isResolved = issue.status === 'RESOLVED' || issue.status === 'CLOSED';
 
-                    <h5 className="text-xs font-bold text-slate-900 dark:text-white">{rep.itemTitle}</h5>
-                    <p className="text-xs text-rose-600 dark:text-rose-400 font-semibold">Reason: {rep.reason}</p>
-                    {rep.details && <p className="text-xs text-slate-500">Details: "{rep.details}"</p>}
-                    <span className="text-[10px] text-slate-400 block">Reported by {rep.reporterName}</span>
+                  return (
+                    <div
+                      key={issue.id}
+                      className={`p-4 rounded-2xl bg-white dark:bg-slate-900 border transition shadow-xs space-y-2.5 ${
+                        isEmergency 
+                          ? 'border-rose-300 dark:border-rose-900 bg-rose-50/20' 
+                          : 'border-slate-200 dark:border-slate-800 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className={`text-[10px] px-2 py-0.5 rounded-md font-extrabold ${
+                              isEmergency 
+                                ? 'bg-rose-500 text-white animate-pulse' 
+                                : issue.urgency === 'HIGH'
+                                  ? 'bg-amber-500 text-white'
+                                  : 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                            }`}>
+                              {issue.urgency}
+                            </span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                              {issue.category}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-mono">
+                              #{issue.id.slice(0, 6)}
+                            </span>
+                          </div>
+                          <h4 className="text-xs font-bold text-slate-900 dark:text-white pt-1">
+                            {issue.title}
+                          </h4>
+                        </div>
 
-                    {rep.status === 'PENDING' && (
-                      <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                        <button
-                          onClick={() => moderateItemReport(rep.id, 'DISMISSED')}
-                          className="px-3 py-1 rounded-lg text-xs font-semibold text-slate-500 hover:bg-slate-100"
-                        >
-                          Dismiss Flag
-                        </button>
-                        <button
-                          onClick={() => moderateItemReport(rep.id, 'ACTIONED')}
-                          className="px-3 py-1 rounded-lg text-xs font-bold bg-rose-600 text-white hover:bg-rose-700"
-                        >
-                          Take Down Listing
-                        </button>
+                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                          isResolved 
+                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                            : issue.status === 'IN_PROGRESS'
+                              ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
+                              : 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
+                        }`}>
+                          {issue.status}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
 
-            {/* Mess Food Reports */}
-            <div className="space-y-4">
-              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Utensils className="w-4 h-4 text-amber-500" />
-                <span>Mess Food Quality Violations ({messReports.length})</span>
-              </h4>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-2">
+                        {issue.description}
+                      </p>
 
-              {messReports.length === 0 ? (
-                <p className="text-xs text-slate-400 py-6 text-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                  Zero escalated mess issues.
-                </p>
-              ) : (
-                messReports.map(mfr => (
-                  <div key={mfr.id} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300">
-                        {mfr.category.replace('_', ' ')} • {mfr.severity}
-                      </span>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        mfr.status === 'RESOLVED' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
-                      }`}>
-                        {mfr.status}
-                      </span>
-                    </div>
-
-                    <h5 className="text-xs font-bold text-slate-900 dark:text-white">{mfr.messBlock} ({mfr.mealType})</h5>
-                    <p className="text-xs text-slate-600 dark:text-slate-300">"{mfr.description}"</p>
-                    <span className="text-[10px] text-slate-400 block">Reported by student {mfr.studentName}</span>
-
-                    {mfr.status !== 'RESOLVED' && (
-                      <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-                        <button
-                          onClick={() => resolveMessReport(mfr.id, 'Chief Warden inspected dining counter and issued warning to caterer.')}
-                          className="px-3 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700"
-                        >
-                          Mark Inspected & Resolved
-                        </button>
+                      <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-100 dark:border-slate-800">
+                        <span className="flex items-center gap-1">
+                          <Building2 className="w-3 h-3 text-slate-400" />
+                          <span>{issue.locationBuilding}{issue.locationRoom ? ` (${issue.locationRoom})` : ''}</span>
+                        </span>
+                        <span className="font-mono text-indigo-600 dark:text-indigo-400 font-bold">
+                          SLA: {isEmergency ? '4-Hr Emergency Window' : '24-Hr Standard Window'}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                ))
+
+                      {/* Status Management Button */}
+                      {!isResolved && (
+                        <div className="flex items-center gap-2 pt-1">
+                          <button
+                            onClick={() => {
+                              updateIssueStatus(issue.id, 'IN_PROGRESS', 'Facility crew dispatched by Dean office');
+                              showToast(`Ticket #${issue.id.slice(0, 6)} assigned to crew!`);
+                            }}
+                            className="flex-1 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-[11px] font-bold transition text-center"
+                          >
+                            Mark In Progress
+                          </button>
+                          <button
+                            onClick={() => {
+                              updateIssueStatus(issue.id, 'RESOLVED', 'Resolved under Dean SLA protocol');
+                              showToast(`Ticket #${issue.id.slice(0, 6)} resolved!`);
+                            }}
+                            className="py-1.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition flex items-center gap-1"
+                          >
+                            <Check className="w-3 h-3" />
+                            <span>Close Ticket</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
               )}
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* TAB 4: SYSTEM AUDIT LOGS */}
-      {activeTab === 'AUDIT_LOGS' && (
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">Institutional Audit Trail & Governance Logs</h3>
-            <p className="text-xs text-slate-500">Immutable chronological record of administrative actions, identity verifications, and compliance events.</p>
-          </div>
-
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="text-[10px] font-black uppercase text-slate-400 border-b border-slate-100 dark:border-slate-800">
-                  <th className="pb-3">Timestamp</th>
-                  <th className="pb-3">Action Type</th>
-                  <th className="pb-3">Authority / Actor</th>
-                  <th className="pb-3">Target Entity</th>
-                  <th className="pb-3">Log Details</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {auditLogs.map(log => (
-                  <tr key={log.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                    <td className="py-3 font-mono text-[11px] text-slate-400">{log.timestamp.slice(0, 19).replace('T', ' ')}</td>
-                    <td className="py-3">
-                      <span className="text-[10px] font-black font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                        {log.action}
-                      </span>
-                    </td>
-                    <td className="py-3 font-bold text-slate-900 dark:text-white">{log.actorName}</td>
-                    <td className="py-3 font-mono text-slate-500">{log.targetEntity}</td>
-                    <td className="py-3 text-slate-600 dark:text-slate-300">{log.details}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Full ID Card Inspection Modal */}
-      {inspectingUser && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-2xl w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">Student ID Card Inspection</h3>
-                <p className="text-xs text-slate-500">{inspectingUser.name} • USN: {inspectingUser.rollNumber}</p>
+        {/* COLUMN 3: OPPORTUNITIES */}
+        {(activeColumn === 'ALL' || activeColumn === 'OPPORTUNITIES') && (
+          <div className="space-y-5 flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-black">
+                  3
+                </div>
+                <div>
+                  <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
+                    Opportunities
+                  </h2>
+                  <p className="text-[11px] text-slate-500">Corporate internships, grants & placements</p>
+                </div>
               </div>
-              <button onClick={() => setInspectingUser(null)} className="text-slate-400 hover:text-slate-600">
-                ✕
+
+              <button
+                onClick={() => setShowAddOppModal(true)}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold shadow-xs transition"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+                <span>Post Opportunity</span>
               </button>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-950">
-              <img 
-                src={inspectingUser.idCardUrl || 'https://placehold.co/600x380/1e293b/ffffff.png?text=STUDENT+ID+CARD+-+' + encodeURIComponent(inspectingUser.rollNumber)}
-                alt="Full ID Card Preview"
-                className="w-full h-80 object-contain bg-slate-900"
-              />
+            {/* Type selector */}
+            <div className="flex items-center gap-1 p-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs text-xs overflow-x-auto">
+              {[
+                { id: 'ALL', label: 'All' },
+                { id: 'INTERNSHIP', label: 'Internships' },
+                { id: 'HACKATHON', label: 'Hackathons' },
+                { id: 'RESEARCH', label: 'Research' },
+                { id: 'SCHOLARSHIP', label: 'Grants' },
+              ].map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => setOppTypeFilter(t.id)}
+                  className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
+                    oppTypeFilter === t.id
+                      ? 'bg-emerald-600 text-white'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
             </div>
 
-            <div className="flex justify-between items-center pt-2">
-              <div className="text-xs text-slate-500">
-                Department: {inspectingUser.department} • Batch: {inspectingUser.batchYear}
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    verifyStudentId(inspectingUser.id, false, 'Invalid ID card or unreadable photo');
-                    setInspectingUser(null);
-                  }}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50"
-                >
-                  Reject Card
-                </button>
-                <button
-                  onClick={() => {
-                    verifyStudentId(inspectingUser.id, true, `Verified identity against college master roll ${inspectingUser.rollNumber}`);
-                    setInspectingUser(null);
-                  }}
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md"
-                >
-                  Approve Student Identity
-                </button>
-              </div>
+            {/* Opportunities List */}
+            <div className="space-y-3 flex-1 overflow-y-auto max-h-[800px] pr-1">
+              {filteredOpportunities.length === 0 ? (
+                <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+                  <Briefcase className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                  <p className="text-xs font-bold text-slate-700 dark:text-slate-300">No opportunities listed in this category</p>
+                  <p className="text-[10px] text-slate-400">Click Post Opportunity to add a new campus drive.</p>
+                </div>
+              ) : (
+                filteredOpportunities.map(opp => (
+                  <div
+                    key={opp.id}
+                    className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 shadow-xs transition space-y-2.5 group"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                            {opp.type}
+                          </span>
+                          <span className="text-xs font-semibold text-slate-500">
+                            {opp.organization}
+                          </span>
+                        </div>
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-white pt-1 group-hover:text-emerald-600 transition">
+                          {opp.title}
+                        </h4>
+                      </div>
+
+                      <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 px-2.5 py-1 rounded-xl shrink-0">
+                        {opp.stipendOrPrize}
+                      </span>
+                    </div>
+
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                      {opp.description}
+                    </p>
+
+                    {/* Eligibility & Skills */}
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {opp.minCgpa && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold">
+                          Min CGPA: {opp.minCgpa}
+                        </span>
+                      )}
+                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 font-semibold">
+                        Deadline: {opp.deadline}
+                      </span>
+                      {opp.skills.slice(0, 3).map((skill, sIdx) => (
+                        <span key={sIdx} className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px]">
+                      <span className="text-slate-400">Verified by Placement Cell</span>
+                      <button
+                        onClick={() => {
+                          toggleSaveOpportunity(opp.id);
+                          showToast('Opportunity bookmarked for students!');
+                        }}
+                        className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+                      >
+                        <Award className="w-3.5 h-3.5" />
+                        <span>Bookmark Drive</span>
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
+          </div>
+        )}
+
+      </div>
+
+      {/* POST OPPORTUNITY MODAL */}
+      {showAddOppModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-lg w-full p-6 animate-in fade-in zoom-in-95 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <Briefcase className="w-5 h-5 text-emerald-600" />
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">Post Campus Opportunity</h3>
+              </div>
+              <button onClick={() => setShowAddOppModal(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddOpportunity} className="space-y-3">
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Opportunity Title *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Summer Research Fellowship at IISc Bangalore"
+                  value={newOppTitle}
+                  onChange={(e) => setNewOppTitle(e.target.value)}
+                  className="w-full text-xs p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 mt-1 outline-none font-semibold"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Company / Institute *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Google India / DRDO"
+                    value={newOppOrg}
+                    onChange={(e) => setNewOppOrg(e.target.value)}
+                    className="w-full text-xs p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 mt-1 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Type *</label>
+                  <select
+                    value={newOppType}
+                    onChange={(e) => setNewOppType(e.target.value as any)}
+                    className="w-full text-xs p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 mt-1 font-semibold"
+                  >
+                    <option value="INTERNSHIP">Internship</option>
+                    <option value="HACKATHON">Hackathon / Contest</option>
+                    <option value="RESEARCH">Research Project</option>
+                    <option value="SCHOLARSHIP">Scholarship / Grant</option>
+                    <option value="FELLOWSHIP">Fellowship</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Stipend / Prize Pool *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. ₹45,000 / month or ₹2,00,000"
+                    value={newOppStipend}
+                    onChange={(e) => setNewOppStipend(e.target.value)}
+                    className="w-full text-xs p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 mt-1 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Min CGPA Required</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="10"
+                    placeholder="7.5"
+                    value={newOppCgpa}
+                    onChange={(e) => setNewOppCgpa(e.target.value)}
+                    className="w-full text-xs p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 mt-1 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Application Deadline</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Dec 28, 2026"
+                  value={newOppDeadline}
+                  onChange={(e) => setNewOppDeadline(e.target.value)}
+                  className="w-full text-xs p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 mt-1 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Required Skills (Comma separated)</label>
+                <input
+                  type="text"
+                  placeholder="Python, C++, Machine Learning, Docker"
+                  value={newOppSkills}
+                  onChange={(e) => setNewOppSkills(e.target.value)}
+                  className="w-full text-xs p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 mt-1 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Description & Application Link *</label>
+                <textarea
+                  required
+                  rows={3}
+                  placeholder="Eligibility details, interview rounds, and registration link..."
+                  value={newOppDesc}
+                  onChange={(e) => setNewOppDesc(e.target.value)}
+                  className="w-full text-xs p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 mt-1 outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddOppModal(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/30"
+                >
+                  Publish to Student Portal
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

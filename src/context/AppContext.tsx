@@ -6,9 +6,14 @@ import {
   AuthSession,
   Course, 
   Assignment, 
+  AssignmentSubmission,
   CampusIssue, 
   EventItem, 
   Club, 
+  ClubRecruitment,
+  ClubEventItem,
+  ClubHackathonItem,
+  ClubApplication,
   Opportunity, 
   ProjectListing, 
   MarketplaceItem, 
@@ -39,6 +44,10 @@ import {
   initialCampusIssues, 
   initialEvents, 
   initialClubs, 
+  initialClubRecruitments,
+  initialClubEvents,
+  initialClubHackathons,
+  initialClubApplications,
   initialOpportunities, 
   initialProjects, 
   initialMarketplace, 
@@ -113,6 +122,12 @@ interface AppContextType {
   academicCalendar: AcademicCalendarItem[];
   updateCourseAttendance: (courseId: string, attended: number, total: number) => void;
   submitAssignment: (assignmentId: string, notes: string) => Promise<{ success: boolean; error?: string }>;
+  addAssignment: (assignment: Omit<Assignment, 'id'>) => void;
+  deleteAssignment: (assignmentId: string) => void;
+  deleteAllMockAssignments: () => void;
+  submitAssignmentWork: (assignmentId: string, data: { textContent?: string; fileName?: string; fileUrl?: string }) => Promise<{ success: boolean }>;
+  gradeAssignmentSubmission: (assignmentId: string, studentId: string, marks: number, feedback?: string) => void;
+  updateCourseSyllabus: (courseId: string, syllabus: { content?: string; type: 'PDF' | 'IMAGE' | 'TEXT'; fileName?: string; url?: string }) => void;
   
   // Issues
   campusIssues: CampusIssue[];
@@ -135,7 +150,16 @@ interface AppContextType {
 
   // Clubs
   clubs: Club[];
+  clubRecruitments: ClubRecruitment[];
+  clubEvents: ClubEventItem[];
+  clubHackathons: ClubHackathonItem[];
+  clubApplications: ClubApplication[];
   toggleJoinClub: (clubId: string) => void;
+  addClubRecruitment: (data: Omit<ClubRecruitment, 'id' | 'postedAt'>) => void;
+  addClubEvent: (data: Omit<ClubEventItem, 'id'>) => void;
+  addClubHackathon: (data: Omit<ClubHackathonItem, 'id'>) => void;
+  submitClubApplication: (data: Omit<ClubApplication, 'id' | 'status' | 'submittedAt'>) => void;
+  updateClubApplicationStatus: (appId: string, status: 'PENDING' | 'SHORTLISTED' | 'ACCEPTED' | 'REJECTED') => void;
 
   // Opportunities
   opportunities: Opportunity[];
@@ -162,6 +186,7 @@ interface AppContextType {
   // Marketplace & Lost/Found
   marketplace: MarketplaceItem[];
   addMarketplaceItem: (item: Omit<MarketplaceItem, 'id' | 'sellerId' | 'sellerName' | 'sellerRoll' | 'createdAt' | 'status'>) => void;
+  markMarketplaceItemSold: (itemId: string) => void;
   lostAndFound: LostAndFoundItem[];
   addLostFoundItem: (item: Omit<LostAndFoundItem, 'id' | 'posterId' | 'posterName' | 'status'>) => void;
   verifyLostFoundClaim: (itemId: string, claimantAnswer: string) => { success: boolean; message: string };
@@ -191,6 +216,7 @@ interface AppContextType {
   updatePrintOrderStatus: (orderId: string, status: PrintOrderStatus, shopNote?: string) => void;
   updatePrintRates: (rates: PrintRates) => void;
   markPrintNotificationRead: (orderId: string) => void;
+  cancelPrintOrder: (orderId: string) => { success: boolean; message: string };
 
   // Announcements
   announcements: OfficialAnnouncement[];
@@ -288,6 +314,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [clubs, setClubs] = useState<Club[]>(() => {
     const saved = localStorage.getItem('campus_clubs');
     return saved ? JSON.parse(saved) : initialClubs;
+  });
+
+  const [clubRecruitments, setClubRecruitments] = useState<ClubRecruitment[]>(() => {
+    const saved = localStorage.getItem('campus_club_recruitments');
+    return saved ? JSON.parse(saved) : initialClubRecruitments;
+  });
+
+  const [clubEvents, setClubEvents] = useState<ClubEventItem[]>(() => {
+    const saved = localStorage.getItem('campus_club_events');
+    return saved ? JSON.parse(saved) : initialClubEvents;
+  });
+
+  const [clubHackathons, setClubHackathons] = useState<ClubHackathonItem[]>(() => {
+    const saved = localStorage.getItem('campus_club_hackathons');
+    return saved ? JSON.parse(saved) : initialClubHackathons;
+  });
+
+  const [clubApplications, setClubApplications] = useState<ClubApplication[]>(() => {
+    const saved = localStorage.getItem('campus_club_applications');
+    return saved ? JSON.parse(saved) : initialClubApplications;
   });
 
   const [opportunities, setOpportunities] = useState<Opportunity[]>(() => {
@@ -1178,7 +1224,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const placePrintOrder = (data: Omit<PrintOrder, 'id' | 'studentId' | 'studentName' | 'studentRoll' | 'totalAmount' | 'status' | 'paymentStatus' | 'notificationRead' | 'createdAt'>) => {
-    const id = `PRN-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+    const id = `PRN-${Math.floor(10000 + Math.random() * 90000)}`;
     const order: PrintOrder = {
       ...data,
       id,
@@ -1197,7 +1243,168 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(order)
     }).catch(() => {});
-    showToast(`Print order ${id} placed. The Print Hub will notify you when it is ready.`);
+    showToast(`Print order ${id} placed. Collect by showing this number at the counter.`);
+  };
+
+  const cancelPrintOrder = (orderId: string): { success: boolean; message: string } => {
+    const order = printOrders.find(o => o.id === orderId);
+    if (!order) return { success: false, message: 'Order not found.' };
+
+    if (['PRINTING', 'READY_FOR_PICKUP', 'COMPLETED'].includes(order.status)) {
+      showToast('Cannot cancel: The print shop is already processing your order.');
+      return { success: false, message: 'Cannot cancel order once processing begins.' };
+    }
+
+    setPrintOrders(prev => prev.map(o => o.id === orderId ? {
+      ...o,
+      status: 'CANCELLED' as PrintOrderStatus,
+      paymentStatus: 'REFUNDED'
+    } : o));
+
+    showToast(`Print order ${orderId} has been cancelled.`);
+    return { success: true, message: 'Print order cancelled successfully.' };
+  };
+
+  const addAssignment = (data: Omit<Assignment, 'id'>) => {
+    const newAsg: Assignment = {
+      ...data,
+      id: `asg_${Date.now()}`,
+      status: 'PENDING',
+      submissions: []
+    };
+    setAssignments(prev => [newAsg, ...prev]);
+    showToast(`Assignment "${data.title}" published! Students can now view and submit.`);
+  };
+
+  const deleteAssignment = (assignmentId: string) => {
+    setAssignments(prev => prev.filter(a => a.id !== assignmentId));
+    showToast('Assignment deleted.');
+  };
+
+  const deleteAllMockAssignments = () => {
+    setAssignments([]);
+    showToast('All mock assignments deleted successfully!');
+  };
+
+  const submitAssignmentWork = async (assignmentId: string, data: { textContent?: string; fileName?: string; fileUrl?: string }): Promise<{ success: boolean }> => {
+    const submission: AssignmentSubmission = {
+      id: `sub_${Date.now()}`,
+      studentId: currentUser.id,
+      studentName: currentUser.name,
+      rollNumber: currentUser.rollNumber,
+      submittedAt: new Date().toLocaleString(),
+      textContent: data.textContent,
+      fileName: data.fileName,
+      fileUrl: data.fileUrl,
+      status: 'SUBMITTED'
+    };
+
+    setAssignments(prev => prev.map(asg => {
+      if (asg.id === assignmentId) {
+        const subs = asg.submissions ? asg.submissions.filter(s => s.studentId !== currentUser.id) : [];
+        return {
+          ...asg,
+          status: 'SUBMITTED',
+          submittedAt: submission.submittedAt,
+          fileAttachment: data.fileName || asg.fileAttachment,
+          submissions: [submission, ...subs]
+        };
+      }
+      return asg;
+    }));
+
+    showToast('Assignment work submitted successfully!');
+    return { success: true };
+  };
+
+  const gradeAssignmentSubmission = (assignmentId: string, studentId: string, marks: number, feedback?: string) => {
+    setAssignments(prev => prev.map(asg => {
+      if (asg.id === assignmentId) {
+        const updatedSubs = (asg.submissions || []).map(sub => {
+          if (sub.studentId === studentId) {
+            return {
+              ...sub,
+              obtainedMarks: marks,
+              feedback,
+              status: 'GRADED' as const
+            };
+          }
+          return sub;
+        });
+        return {
+          ...asg,
+          obtainedMarks: studentId === currentUser.id ? marks : asg.obtainedMarks,
+          submissions: updatedSubs
+        };
+      }
+      return asg;
+    }));
+    showToast(`Graded submission: ${marks} marks recorded.`);
+  };
+
+  const updateCourseSyllabus = (courseId: string, syllabus: { content?: string; type: 'PDF' | 'IMAGE' | 'TEXT'; fileName?: string; url?: string }) => {
+    setCourses(prev => prev.map(course => {
+      if (course.id === courseId) {
+        return {
+          ...course,
+          syllabusContent: syllabus.content,
+          syllabusType: syllabus.type,
+          syllabusFileName: syllabus.fileName,
+          syllabusUrl: syllabus.url || course.syllabusUrl
+        };
+      }
+      return course;
+    }));
+    showToast('Course syllabus updated successfully.');
+  };
+
+  const markMarketplaceItemSold = (itemId: string) => {
+    setMarketplace(prev => prev.map(m => m.id === itemId ? { ...m, status: 'SOLD' } : m));
+    showToast('Item marked as Sold / Deal Closed.');
+  };
+
+  const addClubRecruitment = (data: Omit<ClubRecruitment, 'id' | 'postedAt'>) => {
+    const item: ClubRecruitment = {
+      ...data,
+      id: `rec_${Date.now()}`,
+      postedAt: 'Just now'
+    };
+    setClubRecruitments(prev => [item, ...prev]);
+    showToast(`Recruitment announcement posted for ${data.clubName}!`);
+  };
+
+  const addClubEvent = (data: Omit<ClubEventItem, 'id'>) => {
+    const item: ClubEventItem = {
+      ...data,
+      id: `evt_${Date.now()}`
+    };
+    setClubEvents(prev => [item, ...prev]);
+    showToast(`Club event published for ${data.clubName}!`);
+  };
+
+  const addClubHackathon = (data: Omit<ClubHackathonItem, 'id'>) => {
+    const item: ClubHackathonItem = {
+      ...data,
+      id: `hack_${Date.now()}`
+    };
+    setClubHackathons(prev => [item, ...prev]);
+    showToast(`Hackathon published for ${data.clubName}!`);
+  };
+
+  const submitClubApplication = (data: Omit<ClubApplication, 'id' | 'status' | 'submittedAt'>) => {
+    const item: ClubApplication = {
+      ...data,
+      id: `app_${Date.now()}`,
+      status: 'PENDING',
+      submittedAt: 'Just now'
+    };
+    setClubApplications(prev => [item, ...prev]);
+    showToast(`Application successfully submitted to ${data.clubName}!`);
+  };
+
+  const updateClubApplicationStatus = (appId: string, status: 'PENDING' | 'SHORTLISTED' | 'ACCEPTED' | 'REJECTED') => {
+    setClubApplications(prev => prev.map(app => app.id === appId ? { ...app, status } : app));
+    showToast(`Candidate status updated to ${status}.`);
   };
 
   const updatePrintOrderStatus = (orderId: string, status: PrintOrderStatus, shopNote?: string) => {
@@ -1627,6 +1834,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         academicCalendar,
         updateCourseAttendance,
         submitAssignment,
+        addAssignment,
+        deleteAssignment,
+        deleteAllMockAssignments,
+        submitAssignmentWork,
+        gradeAssignmentSubmission,
+        updateCourseSyllabus,
         campusIssues,
         reportIssue,
         updateIssueStatus,
@@ -1636,7 +1849,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         cancelEventRegistration,
         toggleEventBookmark,
         clubs,
+        clubRecruitments,
+        clubEvents,
+        clubHackathons,
+        clubApplications,
         toggleJoinClub,
+        addClubRecruitment,
+        addClubEvent,
+        addClubHackathon,
+        submitClubApplication,
+        updateClubApplicationStatus,
         opportunities,
         toggleSaveOpportunity,
         projects,
@@ -1655,6 +1877,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         respondToConnectionRequest,
         marketplace,
         addMarketplaceItem,
+        markMarketplaceItemSold,
         lostAndFound,
         addLostFoundItem,
         verifyLostFoundClaim,
@@ -1676,6 +1899,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updatePrintOrderStatus,
         updatePrintRates,
         markPrintNotificationRead,
+        cancelPrintOrder,
         announcements,
         markAnnouncementAsRead,
         broadcastAnnouncement,

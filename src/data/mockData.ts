@@ -5,6 +5,10 @@ import {
   CampusIssue, 
   EventItem, 
   Club, 
+  ClubRecruitment,
+  ClubEventItem,
+  ClubHackathonItem,
+  ClubApplication,
   Opportunity, 
   ProjectListing, 
   MarketplaceItem, 
@@ -159,36 +163,7 @@ export const initialCourses: Course[] = [
   }
 ];
 
-export const initialAssignments: Assignment[] = [
-  {
-    id: 'asg_01',
-    courseCode: 'CS301',
-    courseName: 'Database Management Systems',
-    title: 'Assignment #3: B+ Tree Indexing & Query Cost Calculation',
-    dueDate: 'Tomorrow, 11:59 PM',
-    status: 'PENDING',
-    totalMarks: 20,
-  },
-  {
-    id: 'asg_02',
-    courseCode: 'CS305',
-    courseName: 'OS & Systems Programming Lab',
-    title: 'Lab Record 6: Producer-Consumer Problem with POSIX Semaphores',
-    dueDate: 'In 3 days (Friday)',
-    status: 'PENDING',
-    totalMarks: 15,
-  },
-  {
-    id: 'asg_03',
-    courseCode: 'CS304',
-    courseName: 'Software Engineering & Agile',
-    title: 'Milestone 2: SRS Document & Architecture Diagrams for Campus OS',
-    dueDate: 'Yesterday',
-    status: 'SUBMITTED',
-    totalMarks: 25,
-    obtainedMarks: 24,
-  }
-];
+export const initialAssignments: Assignment[] = [];
 
 export const initialCampusIssues: CampusIssue[] = [
   {
@@ -303,51 +278,180 @@ export const initialEvents: EventItem[] = [
 
 export const initialClubs: Club[] = [
   {
-    id: 'club_01',
-    name: 'ACM Student Chapter',
+    id: 'club_aegis',
+    name: 'AEGIS',
     category: 'TECH',
-    description: 'The premier technical student organization hosting weekly coding jams, tech talks, and open-source hack nights.',
-    leadName: 'Aravind K. (4th Year CSE)',
-    membersCount: 230,
+    description: 'The Official Information Science & Cyber Security Student Chapter of DSCE. Dedicated to ethical hacking, CTF challenges, red/blue teaming, security audits, and hands-on offensive & defensive labs.',
+    leadName: 'Aditya Sharma (Club Lead)',
+    membersCount: 140,
     isJoined: true,
     recruitmentOpen: true,
-    recruitmentDeadline: 'Oct 20, 2026',
-    badge: 'Verified Official',
+    recruitmentDeadline: 'Dec 15, 2026',
+    badge: 'Official Cyber Security Chapter',
+    adminEmail: 'aegis.admin@campus.edu'
   },
   {
-    id: 'club_02',
-    name: 'Robotics & Automation Society (RAS)',
+    id: 'club_pointblank',
+    name: 'POINTBLANK',
     category: 'TECH',
-    description: 'Hands-on robotics lab designing combat bots, autonomous drones, and line-follower rovers.',
-    leadName: 'Meera Pillai (3rd Year ECE)',
-    membersCount: 145,
+    description: 'DSCE Premier Student Coding & Algorithms Community. Organizing national collegiate hackathons, algorithmic contests, open-source projects, and systems development workshops.',
+    leadName: 'Rohan Gupta (President)',
+    membersCount: 195,
     isJoined: false,
     recruitmentOpen: true,
-    recruitmentDeadline: 'Oct 18, 2026',
-    badge: 'Verified Official',
+    recruitmentDeadline: 'Dec 12, 2026',
+    badge: 'Premier Dev Guild',
+    adminEmail: 'pointblank.admin@campus.edu'
   },
   {
-    id: 'club_03',
-    name: 'Design Guild & UI/UX Club',
-    category: 'CULTURAL',
-    description: 'Community for designers, product thinkers, Figma wizards, and digital illustrators.',
-    leadName: 'Tanvi Shah (3rd Year Des)',
-    membersCount: 95,
+    id: 'club_cpa',
+    name: 'CPA',
+    category: 'TECH',
+    description: 'Club of Programming & Algorithms / Creative Professionals Association. Accelerating software craftsmanship, technical paper presentations, hackathons, and student tech mentorship.',
+    leadName: 'Sneha Rao (Convenor)',
+    membersCount: 110,
     isJoined: false,
-    recruitmentOpen: false,
-    badge: 'Verified Official',
+    recruitmentOpen: true,
+    recruitmentDeadline: 'Dec 20, 2026',
+    badge: 'Verified Technical Chapter',
+    adminEmail: 'cpa.admin@campus.edu'
+  }
+];
+
+export const initialClubRecruitments: ClubRecruitment[] = [
+  {
+    id: 'rec_aegis_01',
+    clubId: 'club_aegis',
+    clubName: 'AEGIS',
+    title: 'Core Technical & CTF Team Recruitments (2026-27)',
+    roles: ['Vulnerability Analyst', 'Network Security Dev', 'Web & Mobile App Pentester', 'PR & Event Coordinator'],
+    description: 'Looking for passionate students for CTF teams and hands-on defense lab setups. Open to 1st, 2nd & 3rd year students.',
+    eligibility: 'All Engineering branches, minimum 6.5 CGPA, strong interest in security.',
+    deadline: 'Dec 15, 2026',
+    isOpen: true,
+    postedAt: '2 days ago'
   },
   {
-    id: 'club_04',
-    name: 'Rotaract Youth Club',
-    category: 'SOCIAL',
-    description: 'Social welfare organization conducting campus blood donation camps, school mentoring, and clean-up drives.',
-    leadName: 'Rohan Deshmukh (4th Year Mech)',
-    membersCount: 310,
-    isJoined: true,
-    recruitmentOpen: true,
-    recruitmentDeadline: 'Oct 25, 2026',
-    badge: 'Verified Official',
+    id: 'rec_pb_01',
+    clubId: 'club_pointblank',
+    clubName: 'POINTBLANK',
+    title: 'Annual Developer & Problem Setter Recruitment',
+    roles: ['Competitive Programmer (DSA)', 'Full Stack Developer', 'DevOps & Cloud Lead', 'Design & UI/UX'],
+    description: 'Join Pointblank core team to organize collegiate hackathons, build open-source tools, and mentor juniors.',
+    eligibility: 'All years and branches. Familiarity with GitHub and problem-solving.',
+    deadline: 'Dec 12, 2026',
+    isOpen: true,
+    postedAt: 'Yesterday'
+  },
+  {
+    id: 'rec_cpa_01',
+    clubId: 'club_cpa',
+    clubName: 'CPA',
+    title: 'CPA Executive Council & Coding Mentors Induction',
+    roles: ['Algorithm Designer', 'Python & AI Engineer', 'Technical Content Writer', 'Outreach Lead'],
+    description: 'Conduct coding bootcamps and algorithmic contest curation.',
+    eligibility: 'Open to all DSCE students.',
+    deadline: 'Dec 20, 2026',
+    isOpen: true,
+    postedAt: 'Today'
+  }
+];
+
+export const initialClubEvents: ClubEventItem[] = [
+  {
+    id: 'evt_aegis_01',
+    clubId: 'club_aegis',
+    clubName: 'AEGIS',
+    title: 'RootTheBox: Live Capture The Flag (CTF) Bootcamp',
+    date: 'Nov 28, 2026',
+    time: '02:00 PM - 05:00 PM',
+    venue: 'CDS10 Systems & Cyber Security Lab',
+    description: 'Hands-on training covering reverse engineering, binary exploitation, and steganography challenges.',
+    registrationLink: 'https://aegis.dsce.in/ctf-bootcamp',
+    type: 'WORKSHOP'
+  },
+  {
+    id: 'evt_pb_01',
+    clubId: 'club_pointblank',
+    clubName: 'POINTBLANK',
+    title: 'Graph Algorithms & Dynamic Programming Masterclass',
+    date: 'Dec 02, 2026',
+    time: '04:00 PM - 06:00 PM',
+    venue: 'CS Seminar Hall 201',
+    description: 'Deep dive into advanced graph traversals, shortest paths, and DP optimizations for placement tests.',
+    registrationLink: 'https://pointblank.club/masterclass',
+    type: 'TALK'
+  },
+  {
+    id: 'evt_cpa_01',
+    clubId: 'club_cpa',
+    clubName: 'CPA',
+    title: 'Building Production Microservices with Go & Docker',
+    date: 'Dec 05, 2026',
+    time: '10:00 AM - 01:00 PM',
+    venue: 'Central Innovation Lab',
+    description: 'Hands-on architectural workshop building concurrent RESTful services in Golang.',
+    registrationLink: 'https://cpa-dsce.org/workshop',
+    type: 'BOOTCAMP'
+  }
+];
+
+export const initialClubHackathons: ClubHackathonItem[] = [
+  {
+    id: 'hack_pb_01',
+    clubId: 'club_pointblank',
+    clubName: 'POINTBLANK',
+    title: 'CodeBlaze 2026: 36-Hour National Collegiate Hackathon',
+    date: 'Jan 16 - 18, 2027',
+    mode: 'OFFLINE',
+    prizePool: '₹1,50,000 + Internship Opportunities',
+    registrationDeadline: 'Dec 25, 2026',
+    problemStatements: 'FinTech, Web3, Smart Campus OS, HealthTech, AI Agents & Edge Computing',
+    registrationLink: 'https://codeblaze.pointblank.club'
+  },
+  {
+    id: 'hack_aegis_01',
+    clubId: 'club_aegis',
+    clubName: 'AEGIS',
+    title: 'CyberShield CTF & DefCon Qualifier Hack',
+    date: 'Jan 22, 2027',
+    mode: 'HYBRID',
+    prizePool: '₹75,000 + Bug Bounty Badges',
+    registrationDeadline: 'Jan 10, 2027',
+    problemStatements: 'Zero-Day Vulnerability Patching, SCADA Network Security, Cryptographic Protocol Break',
+    registrationLink: 'https://cybershield.aegis.in'
+  },
+  {
+    id: 'hack_cpa_01',
+    clubId: 'club_cpa',
+    clubName: 'CPA',
+    title: 'AlgoSprint: Real-Time Algorithm Optimization Contest',
+    date: 'Dec 18, 2026',
+    mode: 'ONLINE',
+    prizePool: '₹35,000 + Sponsored Cloud Credits',
+    registrationDeadline: 'Dec 14, 2026',
+    problemStatements: 'High-Frequency Trading Engine Latency, Route Optimization, Memory-Constrained Indexing',
+    registrationLink: 'https://algosprint.cpa.org'
+  }
+];
+
+export const initialClubApplications: ClubApplication[] = [
+  {
+    id: 'app_01',
+    clubId: 'club_aegis',
+    clubName: 'AEGIS',
+    studentId: 'usr_keerthi_001',
+    studentName: 'Keerthi V.',
+    rollNumber: '24CY042',
+    email: 'keerthi.v@campus.edu',
+    department: 'Cyber Security Engineering',
+    semester: 3,
+    roleApplied: 'Vulnerability Analyst',
+    githubOrPortfolio: 'https://github.com/KeerthiV',
+    whyJoin: 'Passionate about binary analysis, active participant in HackTheBox and room challenges.',
+    pastExperience: 'Built packet inspector tool with Wireshark and Scapy in Python.',
+    status: 'PENDING',
+    submittedAt: 'Today, 10:15 AM'
   }
 ];
 
@@ -448,11 +552,13 @@ export const initialMarketplace: MarketplaceItem[] = [
     type: 'SELL',
     category: 'CALCULATOR',
     title: 'Casio fx-991EX ClassWiz Scientific Calculator (Mint Condition)',
-    description: 'Graduating senior selling my genuine Casio ClassWiz. Perfect for all engineering semesters, matrix operations, and integration. Comes with original protective slide-on case.',
+    description: 'Graduating senior selling my genuine Casio ClassWiz. Perfect for all engineering semesters, matrix operations, complex numbers, and integration. Comes with original protective slide-on case.',
     price: 650,
     photos: ['https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?w=300&auto=format&fit=crop&q=80'],
     status: 'ACTIVE',
     createdAt: 'Yesterday',
+    contactPhone: '+91 98452 33412',
+    contactEmail: 'vikram.j@campus.edu'
   },
   {
     id: 'mkt_02',
@@ -461,29 +567,65 @@ export const initialMarketplace: MarketplaceItem[] = [
     sellerRoll: '22CS019',
     type: 'SELL',
     category: 'BOOKS',
-    title: 'Database System Concepts (Silberschatz) 7th Edition Hardcover',
-    description: 'Standard textbook for CS301. Clean pages with minimal pencil highlights. Saves you ₹1,200 compared to new bookstore price.',
-    price: 450,
+    title: 'Operating System Concepts (Silberschatz, Galvin, Gagne) 10th Edition',
+    description: 'Essential textbook for 3rd Sem OS course (1BCY303). Comprehensive notes on process scheduling, semaphores, virtual memory, and file systems. Crisp condition with no pen marks.',
+    price: 490,
     photos: ['https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300&auto=format&fit=crop&q=80'],
     status: 'ACTIVE',
     createdAt: '2 days ago',
+    contactPhone: '+91 97418 55432',
+    contactEmail: 'anjali.s@campus.edu'
   },
   {
     id: 'mkt_03',
     sellerId: 'usr_keerthi_001',
     sellerName: 'Keerthi V. (You)',
-    sellerRoll: '22CS084',
-    type: 'FREE',
-    category: 'LAB_COAT',
-    title: 'White Chemistry / Workshop Lab Coat (Size Large)',
-    description: 'Free giveaway to any 1st or 2nd year student. Clean, freshly washed, zero tears. Collect from Hostel Block B.',
-    price: 0,
-    photos: ['https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=300&auto=format&fit=crop&q=80'],
+    sellerRoll: '24CY042',
+    type: 'SELL',
+    category: 'BOOKS',
+    title: 'Higher Engineering Mathematics - Dr. B.S. Grewal (44th Edition)',
+    description: 'Complete syllabus textbook for 1BMAT31A Probability, Statistics & Complex Analysis. Includes step-by-step solved VTU previous year questions and practice problem sets.',
+    price: 420,
+    photos: ['https://images.unsplash.com/photo-1532012164546-f432f2e37271?w=300&auto=format&fit=crop&q=80'],
     status: 'ACTIVE',
-    createdAt: '3 days ago',
+    createdAt: 'Today',
+    contactPhone: '+91 99001 88765',
+    contactEmail: 'keerthi.v@campus.edu'
   },
   {
     id: 'mkt_04',
+    sellerId: 'usr_rohit_012',
+    sellerName: 'Rohit Kulkarni',
+    sellerRoll: '23CY018',
+    type: 'SELL',
+    category: 'BOOKS',
+    title: 'Introduction to Algorithms (CLRS) 4th Edition - MIT Press',
+    description: 'Standard textbook for Data Structures & Applications (1BCY304). Covers Red-Black trees, dynamic programming, graph algorithms, and amortized analysis.',
+    price: 680,
+    photos: ['https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300&auto=format&fit=crop&q=80'],
+    status: 'ACTIVE',
+    createdAt: 'Yesterday',
+    contactPhone: '+91 98860 99421',
+    contactEmail: 'rohit.k@campus.edu'
+  },
+  {
+    id: 'mkt_05',
+    sellerId: 'usr_deepa_015',
+    sellerName: 'Deepa Nayak',
+    sellerRoll: '23EC033',
+    type: 'SELL',
+    category: 'BOOKS',
+    title: 'Digital Design: With an Introduction to Verilog HDL (M. Morris Mano)',
+    description: 'Reference book for 1BCY305 Digital Design & Computer Architecture (DDCA). Complete with Karnaugh maps, sequential logic, flip-flop registers, and finite state machines.',
+    price: 380,
+    photos: ['https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=300&auto=format&fit=crop&q=80'],
+    status: 'ACTIVE',
+    createdAt: '3 days ago',
+    contactPhone: '+91 94481 77209',
+    contactEmail: 'deepa.n@campus.edu'
+  },
+  {
+    id: 'mkt_06',
     sellerId: 'usr_pranav_009',
     sellerName: 'Pranav K.',
     sellerRoll: '23EC091',
@@ -495,6 +637,8 @@ export const initialMarketplace: MarketplaceItem[] = [
     photos: ['https://images.unsplash.com/photo-1553406830-ef2513450d76?w=300&auto=format&fit=crop&q=80'],
     status: 'ACTIVE',
     createdAt: 'Today',
+    contactPhone: '+91 96112 44321',
+    contactEmail: 'pranav.k@campus.edu'
   }
 ];
 
@@ -637,31 +781,31 @@ export const mockHostelMessMenu: Record<string, MessMeal> = {
 export const initialAnnouncements: OfficialAnnouncement[] = [
   {
     id: 'ann_01',
-    title: 'Mid-Semester Examinations (Odd Sem 2026-27) Timetable & Hall Ticket Notice',
-    source: 'Office of the Controller of Examinations',
+    title: 'OFFICIAL NOTICE: 3rd Internal Assessment Test (IAT-III) Schedule & Eligibility',
+    source: 'Office of Dean Academics & Controller of Examinations',
     category: 'ACADEMIC',
-    publishedAt: 'Yesterday, 04:30 PM',
-    content: 'All students are hereby notified that Mid-Semester Examinations will commence from Monday, November 02, 2026. Hall tickets will be issued only to candidates having minimum 75% attendance in each registered theory and practical subject. Attendance condonation requests must reach the Dean (Academics) before Oct 24.',
+    publishedAt: 'Today, Official Circular',
+    content: 'Official notice : 3rd internal starts at 8th dec , only 75% attendance students will be able to write the internals. Strict eligibility checks will be enforced at all examination halls.',
     isImportant: true,
     read: false,
   },
   {
     id: 'ann_02',
+    title: 'UG Calendar of Events Odd Semester 2026-27 Approved',
+    source: 'Office of the Principal & COE',
+    category: 'ACADEMIC',
+    publishedAt: 'Yesterday, 04:30 PM',
+    content: 'The official calendar of events for 3rd and 5th Semester is now available in the Academic Calendar page. Final CIE submission is scheduled for Dec 18th with semester-end exams commencing Dec 21st onwards.',
+    isImportant: true,
+    read: false,
+  },
+  {
+    id: 'ann_03',
     title: 'Scheduled Campus Fiber-Optic & Wi-Fi Maintenance Window',
     source: 'Campus Information Technology Center',
     category: 'CRITICAL',
     publishedAt: '2 days ago',
     content: 'Planned core switch upgrade will take place on Saturday midnight (01:00 AM - 05:00 AM). Internet and local Intranet services across hostels and academic blocks will experience intermittent outages during this window.',
-    isImportant: true,
-    read: true,
-  },
-  {
-    id: 'ann_03',
-    title: 'Inter-College Tech Symposium "INVENTO 2026" Call for Volunteers',
-    source: 'Student Affairs Council',
-    category: 'EVENTS',
-    publishedAt: '3 days ago',
-    content: 'Inviting energetic student volunteers for event logistics, technical staging, PR, and guest hospitality. Certificates will be recognized in the official student achievement wallet.',
     isImportant: false,
     read: true,
   }
@@ -802,97 +946,148 @@ export const mockDirectoryStudents: UserProfile[] = [
 export const initialExamTimetable: ExamTimetableItem[] = [
   {
     id: 'ex_1',
-    courseCode: 'CS301',
-    courseName: 'Database Management Systems',
-    examType: 'END_SEM',
-    date: '2026-05-12',
-    time: '09:30 AM - 12:30 PM',
-    hall: 'LHC-204',
-    seatNumber: 'Seat B-14',
-    instructions: 'Non-programmable calculators permitted. Bring institute ID card.'
+    courseCode: '1BMAT31A',
+    courseName: 'Probability and Statistics (Maths / PS)',
+    examType: 'INTERNALS',
+    date: 'Dec 08, 2026',
+    time: '09:30 AM - 11:00 AM (Morning Slot 1)',
+    hall: 'CDS10-104',
+    seatNumber: 'CDS-CY-042',
+    instructions: 'Internal Assessment Test 3 (IAT-III). Non-programmable calculators permitted. Minimum 75% attendance mandatory.'
   },
   {
     id: 'ex_2',
-    courseCode: 'CS302',
-    courseName: 'Computer Networks',
-    examType: 'END_SEM',
-    date: '2026-05-15',
-    time: '09:30 AM - 12:30 PM',
-    hall: 'LHC-204',
-    seatNumber: 'Seat B-14',
-    instructions: 'Formula sheet will be provided in the question paper booklet.'
+    courseCode: '1BCY302',
+    courseName: 'Object Oriented Programming with Java (OPJ)',
+    examType: 'INTERNALS',
+    date: 'Dec 08, 2026',
+    time: '02:00 PM - 03:30 PM (Evening Slot 1)',
+    hall: 'CDS10-104',
+    seatNumber: 'CDS-CY-042',
+    instructions: 'Internal Assessment Test 3 (IAT-III). Minimum 75% attendance mandatory.'
   },
   {
     id: 'ex_3',
-    courseCode: 'CS303',
-    courseName: 'Compiler Design',
-    examType: 'END_SEM',
-    date: '2026-05-18',
-    time: '02:00 PM - 05:00 PM',
-    hall: 'LHC-102',
-    seatNumber: 'Seat D-08',
-    instructions: 'Strictly no electronic devices. Hall opens 20 minutes prior.'
+    courseCode: '1BCY303',
+    courseName: 'Operating System & Linux System Programming (OS)',
+    examType: 'INTERNALS',
+    date: 'Dec 09, 2026',
+    time: '09:30 AM - 11:00 AM (Morning Slot 1)',
+    hall: 'CDS10-104',
+    seatNumber: 'CDS-CY-042',
+    instructions: 'Internal Assessment Test 3 (IAT-III). Minimum 75% attendance mandatory.'
   },
   {
     id: 'ex_4',
-    courseCode: 'CS304',
-    courseName: 'Machine Learning Foundations',
-    examType: 'END_SEM',
-    date: '2026-05-22',
-    time: '09:30 AM - 12:30 PM',
-    hall: 'LHC-301',
-    seatNumber: 'Seat A-22',
-    instructions: 'Standard statistical tables will be provided if required.'
+    courseCode: '1BCY304',
+    courseName: 'Data Structures and Applications (DSA)',
+    examType: 'INTERNALS',
+    date: 'Dec 09, 2026',
+    time: '02:00 PM - 03:30 PM (Evening Slot 1)',
+    hall: 'CDS10-104',
+    seatNumber: 'CDS-CY-042',
+    instructions: 'Internal Assessment Test 3 (IAT-III). Minimum 75% attendance mandatory.'
+  },
+  {
+    id: 'ex_5',
+    courseCode: '1BCY305',
+    courseName: 'Digital Design & Computer Architecture (DDCA)',
+    examType: 'INTERNALS',
+    date: 'Dec 10, 2026',
+    time: '09:30 AM - 11:00 AM (Morning Slot 1)',
+    hall: 'CDS10-104',
+    seatNumber: 'CDS-CY-042',
+    instructions: 'Internal Assessment Test 3 (IAT-III). Minimum 75% attendance mandatory.'
   }
 ];
 
 export const initialAcademicCalendar: AcademicCalendarItem[] = [
   {
     id: 'cal_1',
-    title: 'Mid-Semester Examinations Commencement',
-    date: '2026-03-02',
-    category: 'EXAM',
-    description: 'Central mid-term exams across all undergraduate departments.',
+    title: 'Course Registration & Commencement of Classes',
+    date: 'Aug 24 - 28, 2026',
+    category: 'SEMESTER',
+    description: 'Odd Semester commencement for 3rd and 5th Semester UG programmes. Course registration via college portal.',
     isMilestone: true
   },
   {
     id: 'cal_2',
-    title: 'Holi / Spring Break Recess',
-    date: '2026-03-14',
-    category: 'HOLIDAY',
-    description: 'Campus instructional recess and hostel mess holiday schedule.',
-    isMilestone: false
+    title: 'Internal Assessment Test 1 (IAT-I)',
+    date: 'Sep 28 - 30, 2026',
+    category: 'EXAM',
+    description: 'Centralized 1st Internal Assessment Test across all departments.',
+    isMilestone: true
   },
   {
     id: 'cal_3',
-    title: 'Final B.Tech Capstone Project Milestone 2 Review',
-    date: '2026-04-10',
+    title: 'Display of IAT 1 Marks',
+    date: 'Oct 07, 2026',
     category: 'DEADLINE',
-    description: 'Submission of prototype architecture and intermediate evaluation report.',
-    isMilestone: true
-  },
-  {
-    id: 'cal_4',
-    title: 'Course Feedback & Teaching Assessment Survey Closes',
-    date: '2026-04-28',
-    category: 'EVENT',
-    description: 'Mandatory online feedback for end-semester registration hall tickets.',
+    description: 'Faculty grievance redressal and portal entry of IAT-1 evaluated marks.',
     isMilestone: false
   },
   {
-    id: 'cal_5',
-    title: 'Last Instructional Day for Even Semester',
-    date: '2026-05-02',
-    category: 'EVENT',
-    description: 'Completion of lectures, lab internal assessments and viva.',
+    id: 'cal_4',
+    title: 'Internal Assessment Test 2 (IAT-II)',
+    date: 'Nov 03 - 05, 2026',
+    category: 'EXAM',
+    description: 'Centralized 2nd Internal Assessment Test across all departments.',
     isMilestone: true
   },
   {
+    id: 'cal_5',
+    title: 'Display of IAT 2 Marks',
+    date: 'Nov 12, 2026',
+    category: 'DEADLINE',
+    description: 'Portal entry and student verification of IAT-2 scorecards.',
+    isMilestone: false
+  },
+  {
     id: 'cal_6',
-    title: 'End-Semester Final Theory Examinations Begin',
-    date: '2026-05-12',
+    title: 'Internal Assessment Test 3 (IAT-III) — 75% Attendance Required',
+    date: 'Dec 08 - 10, 2026',
     category: 'EXAM',
-    description: 'Terminal examinations across LHC-101 to LHC-304.',
+    description: 'Final Internal Assessment Test. Theory: Maths, OPJ, OS, DSA, DDCA. Minimum 75% attendance mandatory.',
+    isMilestone: true
+  },
+  {
+    id: 'cal_7',
+    title: 'Laboratory Internal Assessment & Practical Exams',
+    date: 'Dec 12 - 17, 2026',
+    category: 'EXAM',
+    description: 'Practical lab exam window, viva-voce, and lab record evaluation.',
+    isMilestone: true
+  },
+  {
+    id: 'cal_8',
+    title: 'Course End Survey Window',
+    date: 'Dec 14 - 16, 2026',
+    category: 'EVENT',
+    description: 'Mandatory student feedback and course outcome survey on college portal.',
+    isMilestone: false
+  },
+  {
+    id: 'cal_9',
+    title: 'Display of IAT 3 Marks',
+    date: 'Dec 15, 2026',
+    category: 'DEADLINE',
+    description: 'Announcement of IAT-3 performance scores by respective department faculties.',
+    isMilestone: false
+  },
+  {
+    id: 'cal_10',
+    title: 'Submission of CIE Marks & Attendance to COE / Last Working Day',
+    date: 'Dec 18, 2026',
+    category: 'DEADLINE',
+    description: 'Final submission of Continuous Internal Evaluation (CIE) and attendance to COE Office. Last working day for odd semester.',
+    isMilestone: true
+  },
+  {
+    id: 'cal_11',
+    title: 'Semester End Theory Examinations (Tentative)',
+    date: 'Dec 21, 2026 Onwards',
+    category: 'EXAM',
+    description: 'VTU Autonomous Semester End Final Theory Examinations commence.',
     isMilestone: true
   }
 ];
@@ -1077,16 +1272,59 @@ export const DEMO_LOGIN_ACCOUNTS: DemoLoginAccount[] = [
     allowedFeatures: [
       'Dashboard (Timetable & Lectures)',
       'Academics (Sem 3 Timetable, Courses & Labs)',
-      'Peer Discovery & Mentorship',
-      'Projects Collaboration Workspace',
-      'Campus Issues & Hostel Reporting',
+      'Assignments & Submissions',
+      'Println Hub (4-Step Xerox Queue)',
+      'Clubs & Chapters (AEGIS, Pointblank, CPA)',
       'Marketplace & Lost and Found'
     ],
     restrictedFeatures: [
-      'Administrative Verifications',
-      'Print Hub Order Management'
+      'Faculty Gradebook Controls',
+      'Administrative Verifications'
     ],
     primaryTab: 'dashboard'
+  },
+  {
+    id: 'demo_faculty',
+    role: 'FACULTY',
+    title: 'Faculty / Professor Portal',
+    badge: 'Faculty • CSE/Cyber',
+    badgeColor: 'bg-indigo-100 text-indigo-700 border-indigo-300 dark:bg-indigo-950 dark:text-indigo-300 dark:border-indigo-800',
+    description: 'Create & manage course assignments, upload syllabus (PDF/pics/text notes), and review student submissions.',
+    credentials: {
+      identifier: 'dr.padmavati',
+      password: 'faculty123'
+    },
+    user: {
+      id: 'usr_faculty_padmavati',
+      name: 'Dr. Padmavati S.',
+      rollNumber: 'FAC-CY-012',
+      email: 'dr.padmavati@campus.edu',
+      avatarUrl: '',
+      avatarColor: '#4f46e5',
+      role: 'FACULTY',
+      department: 'Department of Information Science & Cyber Security',
+      batchYear: 2015,
+      semester: 0,
+      bio: 'Professor, Department of Information Science & Cyber Security. Course Lead for Operating Systems & Linux System Programming.',
+      skills: ['Operating Systems', 'Linux Kernel', 'Distributed Systems', 'Academic Evaluation'],
+      interests: ['Systems Architecture', 'Cyber Forensics'],
+      collaborationGoals: [],
+      isMentor: true,
+      isVerified: true,
+      verificationStatus: 'APPROVED',
+      privacySettings: { showEmail: true, showRoom: false, isDiscoverable: true }
+    },
+    allowedFeatures: [
+      'Assignment Creator & File Attachment',
+      'Student Submissions Review & Grading',
+      'Course Syllabus Upload (PDF / Image / Text)',
+      'Continuous Internal Evaluation (CIE) Tracker'
+    ],
+    restrictedFeatures: [
+      'Hostel Room Maintenance Desk',
+      'Print Hub Order Management'
+    ],
+    primaryTab: 'academics'
   },
   {
     id: 'demo_student',
@@ -1094,18 +1332,18 @@ export const DEMO_LOGIN_ACCOUNTS: DemoLoginAccount[] = [
     title: 'Student Portal',
     badge: 'Undergraduate',
     badgeColor: 'bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800',
-    description: 'Access courses, project workspace, marketplace, lost & found, and hostel services.',
+    description: 'Access courses, project workspace, marketplace, lost & found, and student services.',
     credentials: {
       identifier: '22CS084',
       password: 'student123'
     },
     user: initialCurrentUser,
     allowedFeatures: [
-      'Dashboard & Announcements',
-      'Academics (Exams, Assignments, Notes)',
+      'Dashboard & Official Announcements',
+      'Academics (Exams, Assignments, Timetable)',
       'Peer Discovery & Mentorship',
       'Projects Collaboration Workspace',
-      'Campus Issues & Hostel Reporting',
+      'Println Xerox Express',
       'Marketplace & Lost and Found'
     ],
     restrictedFeatures: [
@@ -1120,7 +1358,7 @@ export const DEMO_LOGIN_ACCOUNTS: DemoLoginAccount[] = [
     title: 'Println Xerox Operator',
     badge: 'Hub Operator',
     badgeColor: 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800',
-    description: 'Process and manage print jobs submitted across campus.',
+    description: 'Manage 4-step print queue, advance process states, real print docket dispatch, and price rates.',
     credentials: {
       identifier: 'print.admin',
       password: 'print123'
@@ -1133,11 +1371,11 @@ export const DEMO_LOGIN_ACCOUNTS: DemoLoginAccount[] = [
       avatarUrl: '',
       avatarColor: '#d97706',
       role: 'PRINT_ADMIN',
-      department: 'Campus Reprographics & Print Center',
+      department: 'DSCE Main Xerox Shop & Reprographics',
       batchYear: 2020,
       semester: 0,
-      bio: 'Operator at Central Library Reprographics Center. Managing fast Xerox & binding queues.',
-      skills: ['Reprographics', 'Lamination', 'Spiral Binding'],
+      bio: 'Operator at DSCE Main Xerox Shop & Central Library Reprographics Center.',
+      skills: ['Reprographics', 'Lamination', 'Spiral Binding', 'Tape Binding'],
       interests: ['Customer Service', 'Campus Logistics'],
       collaborationGoals: [],
       isMentor: false,
@@ -1146,15 +1384,16 @@ export const DEMO_LOGIN_ACCOUNTS: DemoLoginAccount[] = [
       privacySettings: { showEmail: true, showRoom: false, isDiscoverable: true }
     },
     allowedFeatures: [
-      'Println Print Queue',
-      'Document Rendering & Pricing',
-      'Pickup Notification Dispatch'
+      '4-Step Print Queue Triage',
+      'Advance Process Status (Queued -> Processing -> Ready)',
+      'Direct Print Docket (window.print)',
+      'Fixed Price Rate Adjustments (B&W ₹3/page)'
     ],
     restrictedFeatures: [
-      'Student Gradebook & Timetable',
-      'Administrative Verification Queues'
+      'Campus Issues & SLA',
+      'Student Gradebook & Timetable'
     ],
-    primaryTab: 'println'
+    primaryTab: 'print_admin'
   },
   {
     id: 'demo_facility',
@@ -1162,7 +1401,7 @@ export const DEMO_LOGIN_ACCOUNTS: DemoLoginAccount[] = [
     title: 'Facility Technician',
     badge: 'Maintenance',
     badgeColor: 'bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800',
-    description: 'Resolve campus infrastructure, electrical, plumbing, and network issues.',
+    description: 'Resolve campus infrastructure, electrical, plumbing, lab equipment, and classroom fixtures.',
     credentials: {
       identifier: 'facility.staff',
       password: 'facility123'
@@ -1179,7 +1418,7 @@ export const DEMO_LOGIN_ACCOUNTS: DemoLoginAccount[] = [
       batchYear: 2018,
       semester: 0,
       bio: 'Senior Electrical & Facilities Maintenance Supervisor.',
-      skills: ['HVAC', 'Electrical Wiring', 'Plumbing Diagnostics', 'Network Cabling'],
+      skills: ['HVAC', 'Electrical Wiring', 'Plumbing Diagnostics', 'Lab Maintenance'],
       interests: ['Facility Management', 'Safety Auditing'],
       collaborationGoals: [],
       isMentor: false,
@@ -1188,12 +1427,13 @@ export const DEMO_LOGIN_ACCOUNTS: DemoLoginAccount[] = [
       privacySettings: { showEmail: true, showRoom: false, isDiscoverable: true }
     },
     allowedFeatures: [
-      'Campus Issue Management',
-      'Maintenance Work Orders',
+      'Campus Maintenance Issues Queue',
+      'Technician Work Orders & Field Notes',
       'Resolution Status Updates'
     ],
     restrictedFeatures: [
-      'Academics & Exam Records',
+      'Hostel Room Allotments & Mess Management',
+      'Academics & Faculty Grading',
       'Student ID Approvals'
     ],
     primaryTab: 'issues'
@@ -1202,9 +1442,9 @@ export const DEMO_LOGIN_ACCOUNTS: DemoLoginAccount[] = [
     id: 'demo_admin',
     role: 'CAMPUS_ADMIN',
     title: 'Campus Administration / Dean',
-    badge: 'Administrator',
+    badge: 'Dean Office',
     badgeColor: 'bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800',
-    description: 'Full campus oversight, ID approvals, moderation, announcements, and audit logging.',
+    description: 'Executive oversight portal containing Executive Admin & SLA, Campus Issues & SLA, and Opportunities.',
     credentials: {
       identifier: 'admin.dean',
       password: 'admin123'
@@ -1220,9 +1460,9 @@ export const DEMO_LOGIN_ACCOUNTS: DemoLoginAccount[] = [
       department: 'Office of Academic Affairs & Administration',
       batchYear: 2012,
       semester: 0,
-      bio: 'Dean of Student Affairs & Campus Administration. Overseeing institutional policies and campus governance.',
-      skills: ['Campus Governance', 'Academic Policy', 'Student Grievance Arbitration'],
-      interests: ['Higher Education Tech', 'Institutional Strategy'],
+      bio: 'Dean of Student Affairs & Campus Administration. Overseeing institutional policies, SLA targets, and campus governance.',
+      skills: ['Campus Governance', 'Academic Policy', 'Executive SLA Management'],
+      interests: ['Higher Education Strategy', 'Institutional Governance'],
       collaborationGoals: [],
       isMentor: false,
       isVerified: true,
@@ -1230,12 +1470,143 @@ export const DEMO_LOGIN_ACCOUNTS: DemoLoginAccount[] = [
       privacySettings: { showEmail: true, showRoom: false, isDiscoverable: true }
     },
     allowedFeatures: [
-      'Student ID Card Approvals',
-      'Report Moderation Queue',
-      'Official Broadcast Management',
-      'System-Wide Audit Logs'
+      'Executive Admin & SLA Analytics',
+      'Campus Issues & SLA Oversight',
+      'Campus Opportunities Management'
     ],
-    restrictedFeatures: [],
+    restrictedFeatures: [
+      'Mess Food Kitchen Operations',
+      'Hostel Cleaning Scheduling'
+    ],
     primaryTab: 'admin'
+  },
+  {
+    id: 'demo_club_aegis',
+    role: 'CLUB_LEADER',
+    title: 'AEGIS Club Admin',
+    badge: 'Club Admin • AEGIS',
+    badgeColor: 'bg-cyan-100 text-cyan-800 border-cyan-300 dark:bg-cyan-950 dark:text-cyan-300 dark:border-cyan-800',
+    description: 'Manage AEGIS Cyber Security club recruitments, post events and hackathons, review student applications online.',
+    credentials: {
+      identifier: 'aegis.admin',
+      password: 'aegis123'
+    },
+    user: {
+      id: 'usr_club_aegis',
+      name: 'Aditya Sharma (AEGIS Admin)',
+      rollNumber: 'CLB-AEG-01',
+      email: 'aegis.admin@campus.edu',
+      avatarUrl: '',
+      avatarColor: '#0891b2',
+      role: 'CLUB_LEADER',
+      department: 'Information Science & Cyber Security',
+      batchYear: 2024,
+      semester: 5,
+      bio: 'Lead Coordinator for AEGIS Student Chapter. Managing recruitment drives, CTF events, and security workshops.',
+      skills: ['Cyber Security', 'CTF Organizing', 'Penetration Testing'],
+      interests: ['InfoSec', 'Event Management'],
+      collaborationGoals: [],
+      isMentor: true,
+      isVerified: true,
+      verificationStatus: 'APPROVED',
+      privacySettings: { showEmail: true, showRoom: false, isDiscoverable: true }
+    },
+    allowedFeatures: [
+      'AEGIS Club Portal Management',
+      'Post Recruitment Announcements & Roles',
+      'Publish Club Events & Hackathons',
+      'Review Online Student Recruitment Applications'
+    ],
+    restrictedFeatures: [
+      'Dean Administrative Approvals',
+      'Faculty Gradebook'
+    ],
+    primaryTab: 'clubs'
+  },
+  {
+    id: 'demo_club_pointblank',
+    role: 'CLUB_LEADER',
+    title: 'Pointblank Club Admin',
+    badge: 'Club Admin • Pointblank',
+    badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800',
+    description: 'Manage Pointblank Coding Community announcements, collegiate hackathons, and evaluate recruitment candidates.',
+    credentials: {
+      identifier: 'pointblank.admin',
+      password: 'pointblank123'
+    },
+    user: {
+      id: 'usr_club_pointblank',
+      name: 'Rohan Gupta (Pointblank Admin)',
+      rollNumber: 'CLB-PB-01',
+      email: 'pointblank.admin@campus.edu',
+      avatarUrl: '',
+      avatarColor: '#059669',
+      role: 'CLUB_LEADER',
+      department: 'Computer Science & Engineering',
+      batchYear: 2024,
+      semester: 5,
+      bio: 'President at Pointblank Developer Community. Coordinating annual CodeBlaze hackathon and problem-setter inductions.',
+      skills: ['Competitive Programming', 'System Design', 'Hackathon Logistics'],
+      interests: ['Open Source', 'Software Architecture'],
+      collaborationGoals: [],
+      isMentor: true,
+      isVerified: true,
+      verificationStatus: 'APPROVED',
+      privacySettings: { showEmail: true, showRoom: false, isDiscoverable: true }
+    },
+    allowedFeatures: [
+      'Pointblank Club Portal Management',
+      'Post Recruitment Announcements & Roles',
+      'Publish Club Events & Hackathons',
+      'Review Online Student Recruitment Applications'
+    ],
+    restrictedFeatures: [
+      'Dean Administrative Approvals',
+      'Faculty Gradebook'
+    ],
+    primaryTab: 'clubs'
+  },
+  {
+    id: 'demo_club_cpa',
+    role: 'CLUB_LEADER',
+    title: 'CPA Club Admin',
+    badge: 'Club Admin • CPA',
+    badgeColor: 'bg-violet-100 text-violet-800 border-violet-300 dark:bg-violet-950 dark:text-violet-300 dark:border-violet-800',
+    description: 'Manage CPA society announcements, algorithmic contests, bootcamps, and student member applications.',
+    credentials: {
+      identifier: 'cpa.admin',
+      password: 'cpa123'
+    },
+    user: {
+      id: 'usr_club_cpa',
+      name: 'Sneha Rao (CPA Admin)',
+      rollNumber: 'CLB-CPA-01',
+      email: 'cpa.admin@campus.edu',
+      avatarUrl: '',
+      avatarColor: '#7c3aed',
+      role: 'CLUB_LEADER',
+      department: 'Computer Science & Engineering',
+      batchYear: 2024,
+      semester: 5,
+      bio: 'Convenor of CPA. Leading algorithmic workshops, Go/Docker microservices bootcamps, and peer tutoring.',
+      skills: ['Algorithms', 'Distributed Systems', 'Mentorship'],
+      interests: ['Software Engineering', 'Community Building'],
+      collaborationGoals: [],
+      isMentor: true,
+      isVerified: true,
+      verificationStatus: 'APPROVED',
+      privacySettings: { showEmail: true, showRoom: false, isDiscoverable: true }
+    },
+    allowedFeatures: [
+      'CPA Club Portal Management',
+      'Post Recruitment Announcements & Roles',
+      'Publish Club Events & Hackathons',
+      'Review Online Student Recruitment Applications'
+    ],
+    restrictedFeatures: [
+      'Dean Administrative Approvals',
+      'Faculty Gradebook'
+    ],
+    primaryTab: 'clubs'
   }
 ];

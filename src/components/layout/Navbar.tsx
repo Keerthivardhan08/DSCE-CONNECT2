@@ -42,7 +42,7 @@ export const Navbar: React.FC = () => {
     { role: 'CAMPUS_ADMIN', title: 'Campus Super Admin (Dean)', desc: 'Executive oversight, audit student escalations, SLA analytics & broadcast notices.', icon: '🛡️' },
     { role: 'CLASS_REP', title: 'Class Representative', desc: 'Coordinate class assignments, batch issue escalations & post batch notices.', icon: '📢' },
     { role: 'CLUB_LEADER', title: 'Club Leader', desc: 'Manage club profile, member applications, and event QR check-in scanning.', icon: '🏆' },
-    { role: 'FACULTY', title: 'Faculty / Professor', desc: 'Course syllabus oversight, lab grading and student academic risk alerts.', icon: '👨‍🏫' },
+    { role: 'FACULTY', title: 'Faculty / Professor', desc: 'Course syllabus oversight, lab grading and student academic risk alerts.', icon: '🎓' },
     { role: 'HOSTEL_STAFF', title: 'Hostel & Mess Staff', desc: 'Manage 7-day mess menu, hostel room repairs & out-pass verification.', icon: '🏢' },
   ];
 

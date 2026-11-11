@@ -4,406 +4,999 @@ import {
   Users2, 
   CheckCircle2, 
   UserPlus, 
-  LogOut, 
   Clock, 
   Sparkles, 
   Search, 
   Compass, 
   Trophy, 
-  Layers,
-  Sparkle
+  ShieldCheck,
+  Calendar,
+  Code2,
+  FileText,
+  Send,
+  PlusCircle,
+  ExternalLink,
+  ChevronRight,
+  Filter,
+  Check,
+  X,
+  Award,
+  ArrowRight
 } from 'lucide-react';
-
-type ClubCategory = 'ALL' | 'TECH' | 'CULTURAL' | 'SPORTS' | 'SOCIAL' | 'ACADEMIC';
-
-interface CategoryStyle {
-  label: string;
-  color: string;
-  bg: string;
-  border: string;
-  badgeBg: string;
-  badgeText: string;
-  barGradient: string;
-  iconBg: string;
-  emoji: string;
-}
-
-const CATEGORY_MAP: Record<ClubCategory, CategoryStyle> = {
-  ALL: {
-    label: 'All Clubs',
-    color: 'text-purple-700 dark:text-purple-300',
-    bg: 'bg-purple-100 dark:bg-purple-950/60',
-    border: 'border-purple-200 dark:border-purple-800/40',
-    badgeBg: 'bg-purple-100 dark:bg-purple-950/50',
-    badgeText: 'text-purple-700 dark:text-purple-300',
-    barGradient: 'from-purple-500 to-indigo-600',
-    iconBg: 'from-purple-50 to-indigo-100 dark:from-purple-950 dark:to-indigo-900',
-    emoji: '🌟',
-  },
-  TECH: {
-    label: 'Tech & Dev',
-    color: 'text-blue-700 dark:text-blue-300',
-    bg: 'bg-blue-100 dark:bg-blue-950/60',
-    border: 'border-blue-200 dark:border-blue-800/40',
-    badgeBg: 'bg-blue-100 dark:bg-blue-950/60',
-    badgeText: 'text-blue-700 dark:text-blue-300',
-    barGradient: 'from-blue-500 to-cyan-500',
-    iconBg: 'from-blue-50 to-cyan-100 dark:from-blue-950 dark:to-cyan-900',
-    emoji: '💻',
-  },
-  CULTURAL: {
-    label: 'Cultural & Arts',
-    color: 'text-pink-700 dark:text-pink-300',
-    bg: 'bg-pink-100 dark:bg-pink-950/60',
-    border: 'border-pink-200 dark:border-pink-800/40',
-    badgeBg: 'bg-pink-100 dark:bg-pink-950/60',
-    badgeText: 'text-pink-700 dark:text-pink-300',
-    barGradient: 'from-pink-500 to-rose-500',
-    iconBg: 'from-pink-50 to-rose-100 dark:from-pink-950 dark:to-rose-900',
-    emoji: '🎭',
-  },
-  SPORTS: {
-    label: 'Sports & Fitness',
-    color: 'text-emerald-700 dark:text-emerald-300',
-    bg: 'bg-emerald-100 dark:bg-emerald-950/60',
-    border: 'border-emerald-200 dark:border-emerald-800/40',
-    badgeBg: 'bg-emerald-100 dark:bg-emerald-950/60',
-    badgeText: 'text-emerald-700 dark:text-emerald-300',
-    barGradient: 'from-emerald-500 to-teal-500',
-    iconBg: 'from-emerald-50 to-teal-100 dark:from-emerald-950 dark:to-teal-900',
-    emoji: '🏆',
-  },
-  SOCIAL: {
-    label: 'Social & Impact',
-    color: 'text-amber-700 dark:text-amber-300',
-    bg: 'bg-amber-100 dark:bg-amber-950/60',
-    border: 'border-amber-200 dark:border-amber-800/40',
-    badgeBg: 'bg-amber-100 dark:bg-amber-950/60',
-    badgeText: 'text-amber-700 dark:text-amber-300',
-    barGradient: 'from-amber-500 to-orange-500',
-    iconBg: 'from-amber-50 to-orange-100 dark:from-amber-950 dark:to-orange-900',
-    emoji: '🤝',
-  },
-  ACADEMIC: {
-    label: 'Academic Societies',
-    color: 'text-indigo-700 dark:text-indigo-300',
-    bg: 'bg-indigo-100 dark:bg-indigo-950/60',
-    border: 'border-indigo-200 dark:border-indigo-800/40',
-    badgeBg: 'bg-indigo-100 dark:bg-indigo-950/60',
-    badgeText: 'text-indigo-700 dark:text-indigo-300',
-    barGradient: 'from-indigo-500 to-purple-600',
-    iconBg: 'from-indigo-50 to-purple-100 dark:from-indigo-950 dark:to-purple-900',
-    emoji: '📚',
-  },
-};
+import { ClubRecruitment, ClubEventItem, ClubHackathonItem, ClubApplication } from '../../types';
 
 export const ClubsView: React.FC = () => {
-  const { clubs, toggleJoinClub, showToast } = useApp();
-  const [selectedCategory, setSelectedCategory] = useState<ClubCategory>('ALL');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [recruitingOnly, setRecruitingOnly] = useState(false);
-  const [joinedOnly, setJoinedOnly] = useState(false);
+  const { 
+    currentUser, 
+    currentRole, 
+    clubs, 
+    clubRecruitments, 
+    clubEvents, 
+    clubHackathons, 
+    clubApplications,
+    toggleJoinClub, 
+    addClubRecruitment,
+    addClubEvent,
+    addClubHackathon,
+    submitClubApplication,
+    updateClubApplicationStatus,
+    showToast 
+  } = useApp();
 
-  // Computed stats
-  const totalClubs = clubs.length;
-  const joinedCount = clubs.filter(c => c.isJoined).length;
-  const recruitingCount = clubs.filter(c => c.recruitmentOpen).length;
+  const isClubLeader = currentRole === 'CLUB_LEADER';
 
-  // Filtered clubs
-  const filteredClubs = clubs.filter(club => {
-    const matchesCategory = selectedCategory === 'ALL' || club.category === selectedCategory;
-    const matchesSearch = 
-      !searchQuery.trim() ||
-      club.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      club.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      club.leadName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRecruiting = !recruitingOnly || club.recruitmentOpen;
-    const matchesJoined = !joinedOnly || club.isJoined;
+  // Determine which club this leader administers
+  const defaultAdminClub = currentUser.email.includes('aegis') ? 'AEGIS' :
+    currentUser.email.includes('pointblank') ? 'POINTBLANK' :
+    currentUser.email.includes('cpa') ? 'CPA' : 'AEGIS';
 
-    return matchesCategory && matchesSearch && matchesRecruiting && matchesJoined;
-  });
+  const [activeTab, setActiveTab] = useState<'CLUBS' | 'RECRUITMENTS' | 'EVENTS' | 'HACKATHONS' | 'ADMIN'>(
+    isClubLeader ? 'ADMIN' : 'CLUBS'
+  );
+
+  const [selectedClubForFilter, setSelectedClubForFilter] = useState<'ALL' | 'AEGIS' | 'POINTBLANK' | 'CPA'>('ALL');
+  
+  // Application Modal state
+  const [applyingForRecruitment, setApplyingForRecruitment] = useState<ClubRecruitment | null>(null);
+  const [applicationRole, setApplicationRole] = useState('');
+  const [githubUrl, setGithubUrl] = useState('');
+  const [whyJoin, setWhyJoin] = useState('');
+  const [experience, setExperience] = useState('');
+
+  // Admin Form state
+  const [adminClubName, setAdminClubName] = useState(defaultAdminClub);
+  const [showNewRecruitModal, setShowNewRecruitModal] = useState(false);
+  const [showNewEventModal, setShowNewEventModal] = useState(false);
+  const [showNewHackModal, setShowNewHackModal] = useState(false);
+
+  // Form inputs
+  const [newRecTitle, setNewRecTitle] = useState('');
+  const [newRecRoles, setNewRecRoles] = useState('');
+  const [newRecDesc, setNewRecDesc] = useState('');
+  const [newRecEligibility, setNewRecEligibility] = useState('');
+  const [newRecDeadline, setNewRecDeadline] = useState('Dec 20, 2026');
+
+  const [newEvtTitle, setNewEvtTitle] = useState('');
+  const [newEvtDate, setNewEvtDate] = useState('');
+  const [newEvtTime, setNewEvtTime] = useState('');
+  const [newEvtVenue, setNewEvtVenue] = useState('');
+  const [newEvtDesc, setNewEvtDesc] = useState('');
+
+  const [newHackTitle, setNewHackTitle] = useState('');
+  const [newHackDate, setNewHackDate] = useState('');
+  const [newHackPrize, setNewHackPrize] = useState('');
+  const [newHackProblems, setNewHackProblems] = useState('');
+
+  const filteredRecruitments = clubRecruitments.filter(r => 
+    selectedClubForFilter === 'ALL' || r.clubName.toUpperCase() === selectedClubForFilter
+  );
+
+  const filteredEvents = clubEvents.filter(e => 
+    selectedClubForFilter === 'ALL' || e.clubName.toUpperCase() === selectedClubForFilter
+  );
+
+  const filteredHackathons = clubHackathons.filter(h => 
+    selectedClubForFilter === 'ALL' || h.clubName.toUpperCase() === selectedClubForFilter
+  );
+
+  const handleApplySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!applyingForRecruitment || !applicationRole.trim()) {
+      showToast('Please select a role to apply for.');
+      return;
+    }
+
+    submitClubApplication({
+      clubId: applyingForRecruitment.clubId,
+      clubName: applyingForRecruitment.clubName,
+      studentId: currentUser.id,
+      studentName: currentUser.name,
+      rollNumber: currentUser.rollNumber,
+      email: currentUser.email,
+      department: currentUser.department,
+      semester: currentUser.semester || 3,
+      roleApplied: applicationRole,
+      githubOrPortfolio: githubUrl,
+      whyJoin,
+      pastExperience: experience
+    });
+
+    setApplyingForRecruitment(null);
+    setApplicationRole('');
+    setGithubUrl('');
+    setWhyJoin('');
+    setExperience('');
+  };
+
+  const handleCreateRecruitment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newRecTitle.trim()) return;
+
+    addClubRecruitment({
+      clubId: `club_${adminClubName.toLowerCase()}`,
+      clubName: adminClubName,
+      title: newRecTitle,
+      roles: newRecRoles.split(',').map(r => r.trim()).filter(Boolean),
+      description: newRecDesc,
+      eligibility: newRecEligibility || 'Open to all DSCE students',
+      deadline: newRecDeadline,
+      isOpen: true
+    });
+
+    setShowNewRecruitModal(false);
+    setNewRecTitle('');
+    setNewRecRoles('');
+    setNewRecDesc('');
+  };
+
+  const handleCreateEvent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newEvtTitle.trim()) return;
+
+    addClubEvent({
+      clubId: `club_${adminClubName.toLowerCase()}`,
+      clubName: adminClubName,
+      title: newEvtTitle,
+      date: newEvtDate || 'Dec 10, 2026',
+      time: newEvtTime || '02:00 PM - 04:30 PM',
+      venue: newEvtVenue || 'Seminar Hall',
+      description: newEvtDesc,
+      type: 'WORKSHOP'
+    });
+
+    setShowNewEventModal(false);
+    setNewEvtTitle('');
+    setNewEvtDesc('');
+  };
+
+  const handleCreateHackathon = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newHackTitle.trim()) return;
+
+    addClubHackathon({
+      clubId: `club_${adminClubName.toLowerCase()}`,
+      clubName: adminClubName,
+      title: newHackTitle,
+      date: newHackDate || 'Jan 20, 2027',
+      mode: 'OFFLINE',
+      prizePool: newHackPrize || '₹50,000',
+      registrationDeadline: 'Dec 30, 2026',
+      problemStatements: newHackProblems || 'AI, Cybersecurity & Systems'
+    });
+
+    setShowNewHackModal(false);
+    setNewHackTitle('');
+    setNewHackPrize('');
+    setNewHackProblems('');
+  };
 
   return (
     <div className="space-y-6">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-700 animate-gradient text-white p-6 sm:p-8 shadow-2xl shadow-purple-900/30">
-        {/* Decorative glass blobs */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-pink-500/20 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-400/20 rounded-full blur-2xl pointer-events-none translate-y-1/2 -translate-x-1/4" />
-        <div className="absolute top-1/2 right-1/4 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-3 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[11px] font-semibold text-purple-200 border border-white/15">
-              <span className="relative flex w-2 h-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
-              </span>
-              🎯 Official Student Chapters &amp; Societies
+      <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-6 sm:p-8 text-white shadow-2xl">
+        <div className="absolute -right-20 -top-24 h-64 w-64 rounded-full bg-cyan-500/20 blur-3xl" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200">
+              <Code2 className="h-3.5 w-3.5" /> Technical Communities & Chapters
             </div>
-            
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight">
-              Campus Clubs &amp; Student Societies
+            <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
+              AEGIS • POINTBLANK • CPA
             </h1>
-            
-            <p className="text-xs sm:text-sm text-purple-100/90 leading-relaxed">
-              Explore active technical chapters, cultural groups, and athletic councils. Connect with student leads, attend workshops, and join ongoing recruitment drives.
+            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">
+              Explore official technical student chapters, participate in hackathons, register for workshops, and apply for core recruitment drives online.
             </p>
           </div>
 
-          {/* Glass Stat Pods */}
-          <div className="flex flex-wrap sm:flex-nowrap gap-3 self-start lg:self-auto">
-            <div className="bg-white/10 backdrop-blur-md border border-white/15 px-4 py-3.5 rounded-2xl text-center min-w-[95px] hover:bg-white/15 transition group">
-              <div className="text-[10px] text-purple-200 font-semibold uppercase tracking-wider">Total Clubs</div>
-              <div className="text-2xl sm:text-3xl font-extrabold mt-1 group-hover:scale-105 transition-transform">{totalClubs}</div>
-              <div className="text-[10px] mt-0.5 bg-purple-400/20 text-purple-200 px-2 py-0.5 rounded-full font-bold">Directories</div>
+          {isClubLeader && (
+            <div className="rounded-2xl border border-cyan-400/30 bg-cyan-950/60 px-5 py-3 text-right">
+              <span className="text-[10px] font-black uppercase tracking-wider text-cyan-300 block">Logged In As</span>
+              <p className="text-base font-black text-white">{adminClubName} Club Admin</p>
             </div>
-
-            <div className="bg-white/10 backdrop-blur-md border border-white/15 px-4 py-3.5 rounded-2xl text-center min-w-[95px] hover:bg-white/15 transition group">
-              <div className="text-[10px] text-purple-200 font-semibold uppercase tracking-wider">My Clubs</div>
-              <div className="text-2xl sm:text-3xl font-extrabold mt-1 text-emerald-300 group-hover:scale-105 transition-transform">{joinedCount}</div>
-              <div className="text-[10px] mt-0.5 bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold">Active Member</div>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-md border border-white/15 px-4 py-3.5 rounded-2xl text-center min-w-[95px] hover:bg-white/15 transition group">
-              <div className="text-[10px] text-purple-200 font-semibold uppercase tracking-wider">Recruiting</div>
-              <div className="text-2xl sm:text-3xl font-extrabold mt-1 text-amber-300 group-hover:scale-105 transition-transform">{recruitingCount}</div>
-              <div className="text-[10px] mt-0.5 bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-bold">Open Drives</div>
-            </div>
-          </div>
+          )}
         </div>
-      </div>
+      </section>
 
-      {/* Search Bar & Quick Toggles */}
-      <div className="flex flex-col md:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search clubs by name, description, or lead..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 text-xs rounded-2xl bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/30 dark:border-slate-700/50 shadow-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition text-slate-900 dark:text-white placeholder-slate-400"
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
+      {/* Navigation Subtabs & Club Filter */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2 border-b border-slate-200 dark:border-slate-800">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
           <button
-            onClick={() => setRecruitingOnly(!recruitingOnly)}
-            className={`px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all border flex items-center gap-1.5 whitespace-nowrap ${
-              recruitingOnly
-                ? 'bg-amber-500 text-white border-amber-600 shadow-md shadow-amber-500/20'
-                : 'bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-white/30 dark:border-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+            onClick={() => setActiveTab('CLUBS')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
+              activeTab === 'CLUBS' 
+                ? 'bg-campus-600 text-white shadow-md' 
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
             }`}
           >
-            <Clock className="w-3.5 h-3.5" />
-            <span>Recruiting Only</span>
+            <Users2 className="w-3.5 h-3.5" />
+            <span>Clubs Overview (3)</span>
           </button>
 
           <button
-            onClick={() => setJoinedOnly(!joinedOnly)}
-            className={`px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all border flex items-center gap-1.5 whitespace-nowrap ${
-              joinedOnly
-                ? 'bg-emerald-600 text-white border-emerald-700 shadow-md shadow-emerald-600/20'
-                : 'bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-white/30 dark:border-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+            onClick={() => setActiveTab('RECRUITMENTS')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
+              activeTab === 'RECRUITMENTS' 
+                ? 'bg-campus-600 text-white shadow-md' 
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
             }`}
           >
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Joined Only</span>
+            <UserPlus className="w-3.5 h-3.5" />
+            <span>Recruitments ({clubRecruitments.length})</span>
           </button>
-        </div>
-      </div>
 
-      {/* Category Filter Pills */}
-      <div className="flex flex-wrap gap-2">
-        {(Object.keys(CATEGORY_MAP) as ClubCategory[]).map(catKey => {
-          const cfg = CATEGORY_MAP[catKey];
-          const isActive = selectedCategory === catKey;
+          <button
+            onClick={() => setActiveTab('EVENTS')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
+              activeTab === 'EVENTS' 
+                ? 'bg-campus-600 text-white shadow-md' 
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+            }`}
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Events & Workshops ({clubEvents.length})</span>
+          </button>
 
-          return (
+          <button
+            onClick={() => setActiveTab('HACKATHONS')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
+              activeTab === 'HACKATHONS' 
+                ? 'bg-campus-600 text-white shadow-md' 
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+            }`}
+          >
+            <Trophy className="w-3.5 h-3.5" />
+            <span>Hackathons ({clubHackathons.length})</span>
+          </button>
+
+          {isClubLeader && (
             <button
-              key={catKey}
-              onClick={() => setSelectedCategory(catKey)}
-              className={`px-3.5 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                isActive
-                  ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-md scale-105'
-                  : 'bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/30 dark:border-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+              onClick={() => setActiveTab('ADMIN')}
+              className={`px-4 py-2 rounded-xl text-xs font-black transition whitespace-nowrap flex items-center gap-1.5 ${
+                activeTab === 'ADMIN' 
+                  ? 'bg-indigo-600 text-white shadow-md' 
+                  : 'bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100'
               }`}
             >
-              <span>{cfg.emoji}</span>
-              <span>{cfg.label}</span>
-              {catKey !== 'ALL' && (
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
-                  isActive ? 'bg-white/20 dark:bg-slate-900/20 text-white dark:text-slate-900' : 'bg-slate-200/60 dark:bg-slate-700/60 text-slate-500 dark:text-slate-400'
-                }`}>
-                  {clubs.filter(c => c.category === catKey).length}
-                </span>
-              )}
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Club Admin Portal</span>
             </button>
-          );
-        })}
+          )}
+        </div>
+
+        {/* Filter by Specific Club */}
+        {activeTab !== 'ADMIN' && (
+          <div className="flex items-center gap-1 text-xs">
+            <span className="text-slate-400 font-bold hidden sm:inline">Filter:</span>
+            {(['ALL', 'AEGIS', 'POINTBLANK', 'CPA'] as const).map(c => (
+              <button
+                key={c}
+                onClick={() => setSelectedClubForFilter(c)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
+                  selectedClubForFilter === c 
+                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xs' 
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Section Divider */}
-      <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent" />
-        <span className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
-          Showing {filteredClubs.length} of {clubs.length} Clubs
-        </span>
-        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent" />
-      </div>
-
-      {/* Club Cards Grid */}
-      {filteredClubs.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {filteredClubs.map(club => {
-            const catCfg = CATEGORY_MAP[club.category] || CATEGORY_MAP.ALL;
-            // Nominal capacity calculation for progress bar
-            const nominalCap = 350;
-            const membershipPct = Math.min(100, Math.round((club.membersCount / nominalCap) * 100));
+      {/* SUBTAB 1: 3 CLUBS OVERVIEW */}
+      {activeTab === 'CLUBS' && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {clubs.map(club => {
+            const clubRecruits = clubRecruitments.filter(r => r.clubId === club.id);
+            const clubEvts = clubEvents.filter(e => e.clubId === club.id);
+            const clubHacks = clubHackathons.filter(h => h.clubId === club.id);
 
             return (
-              <div
+              <div 
                 key={club.id}
-                className="relative overflow-hidden rounded-3xl bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/20 dark:border-slate-700/40 shadow-xl shadow-black/5 hover:-translate-y-1 hover:shadow-2xl transition-all duration-200 p-6 flex flex-col justify-between group space-y-4"
+                className="p-6 rounded-[2rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg hover:shadow-xl transition space-y-4 flex flex-col justify-between"
               >
-                {/* Left accent bar */}
-                <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-3xl bg-gradient-to-b ${catCfg.barGradient}`} />
-
-                <div className="space-y-3.5">
-                  {/* Top Bar with Category, Badges and Emoji */}
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-9 h-9 rounded-2xl bg-gradient-to-br ${catCfg.iconBg} flex items-center justify-center text-base shadow-sm shrink-0 group-hover:scale-110 transition-transform`}>
-                        {catCfg.emoji}
-                      </div>
-                      <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider border ${catCfg.bg} ${catCfg.color} ${catCfg.border}`}>
-                        {club.category}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40">
-                        {club.badge}
-                      </span>
-                      {club.isJoined && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/40 flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
-                          Joined
-                        </span>
-                      )}
-                    </div>
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
+                      {club.badge}
+                    </span>
+                    <span className="text-xs font-bold text-slate-500">
+                      {club.membersCount} Members
+                    </span>
                   </div>
 
-                  {/* Club Title & Lead */}
                   <div>
-                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                    <h2 className="text-2xl font-black text-slate-900 dark:text-white">
                       {club.name}
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5 flex items-center gap-1.5">
-                      <Users2 className="w-3.5 h-3.5 text-slate-400" />
-                      <span><strong>Lead:</strong> {club.leadName}</span>
+                    </h2>
+                    <p className="text-xs text-slate-500 font-semibold mt-0.5">
+                      Lead: {club.leadName}
                     </p>
                   </div>
 
-                  {/* Description */}
-                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3">
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                     {club.description}
                   </p>
 
-                  {/* Member Count & Capacity Progress Bar */}
-                  <div className="space-y-1.5 pt-1">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-500 dark:text-slate-400 font-medium">Community Strength</span>
-                      <span className="font-bold text-slate-700 dark:text-slate-200">
-                        {club.membersCount} Members <span className="text-slate-400 font-normal">({membershipPct}% capacity)</span>
-                      </span>
+                  <div className="pt-3 border-t border-slate-100 dark:border-slate-800 grid grid-cols-3 gap-2 text-center text-xs">
+                    <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800">
+                      <span className="font-extrabold text-slate-900 dark:text-white block">{clubRecruits.length}</span>
+                      <span className="text-[10px] text-slate-400">Recruitments</span>
                     </div>
-                    <div className="h-1.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full bg-gradient-to-r ${catCfg.barGradient} transition-all duration-500`}
-                        style={{ width: `${membershipPct}%` }}
-                      />
+                    <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800">
+                      <span className="font-extrabold text-slate-900 dark:text-white block">{clubEvts.length}</span>
+                      <span className="text-[10px] text-slate-400">Events</span>
+                    </div>
+                    <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800">
+                      <span className="font-extrabold text-slate-900 dark:text-white block">{clubHacks.length}</span>
+                      <span className="text-[10px] text-slate-400">Hackathons</span>
                     </div>
                   </div>
-
-                  {/* Recruitment Status Pill */}
-                  {club.recruitmentOpen ? (
-                    <div className="p-2.5 rounded-2xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300 flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 font-semibold">
-                        <Clock className="w-3.5 h-3.5 text-amber-500 animate-pulse shrink-0" />
-                        <span>Recruiting until <strong>{club.recruitmentDeadline}</strong></span>
-                      </div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-300 uppercase tracking-wider">
-                        Open
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="p-2 rounded-2xl bg-slate-100/70 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/50 text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                      <span>Recruitment currently closed for the term</span>
-                    </div>
-                  )}
                 </div>
 
-                {/* Footer Join/Leave CTA */}
-                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
-                  <div className="text-[11px] text-slate-400 dark:text-slate-500">
-                    {club.isJoined ? 'Official Society Member' : 'Open to all students'}
-                  </div>
-
-                  {club.isJoined ? (
+                <div className="pt-3 space-y-2">
+                  {club.recruitmentOpen && (
                     <button
                       onClick={() => {
-                        toggleJoinClub(club.id);
-                        showToast(`Left ${club.name}`);
+                        const rec = clubRecruitments.find(r => r.clubId === club.id) || clubRecruitments[0];
+                        setApplyingForRecruitment(rec);
                       }}
-                      className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-600 dark:bg-slate-800 dark:hover:bg-rose-950/40 dark:text-slate-300 dark:hover:text-rose-300 text-xs font-bold border border-slate-200 dark:border-slate-700 shadow-sm transition-all flex items-center gap-1.5 group/btn"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 group-hover/btn:hidden" />
-                      <LogOut className="w-3.5 h-3.5 hidden group-hover/btn:inline text-rose-500" />
-                      <span>Member ✅ (Leave)</span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        toggleJoinClub(club.id);
-                        showToast(`Joined ${club.name}! 🎉`);
-                      }}
-                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-purple-500/30 hover:shadow-purple-500/40 transition-all flex items-center gap-1.5"
+                      className="w-full py-2.5 rounded-xl bg-campus-600 hover:bg-campus-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-campus-600/20 transition"
                     >
                       <UserPlus className="w-3.5 h-3.5" />
-                      <span>Join / Apply →</span>
+                      <span>Apply for Recruitment</span>
                     </button>
                   )}
+
+                  <button
+                    onClick={() => toggleJoinClub(club.id)}
+                    className={`w-full py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                      club.isJoined 
+                        ? 'border border-emerald-300 dark:border-emerald-800 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                        : 'border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    {club.isJoined ? '✓ Joined Member' : '+ Follow Chapter'}
+                  </button>
                 </div>
               </div>
             );
           })}
         </div>
-      ) : (
-        /* Empty State */
-        <div className="p-12 text-center rounded-3xl bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/20 dark:border-slate-700/40 shadow-xl shadow-black/5 space-y-4">
-          <div className="w-14 h-14 rounded-3xl bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center mx-auto text-2xl shadow-inner">
-            🔍
+      )}
+
+      {/* SUBTAB 2: RECRUITMENTS ANNOUNCEMENTS */}
+      {activeTab === 'RECRUITMENTS' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+            <div>
+              <h3 className="text-base font-black text-slate-900 dark:text-white">Active Recruitment Announcements</h3>
+              <p className="text-xs text-slate-500">Official inductions open for students. Fill the application form online.</p>
+            </div>
           </div>
-          <div className="space-y-1">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">No Clubs Found</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-              We couldn't find any student societies matching your current filters or search term.
-            </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {filteredRecruitments.map(rec => (
+              <div 
+                key={rec.id}
+                className="p-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                      {rec.clubName}
+                    </span>
+                    <h4 className="text-base font-black text-slate-900 dark:text-white mt-1">
+                      {rec.title}
+                    </h4>
+                  </div>
+                  <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-full shrink-0">
+                    Open
+                  </span>
+                </div>
+
+                <p className="text-xs text-slate-600 dark:text-slate-300">
+                  {rec.description}
+                </p>
+
+                <div className="space-y-1.5 pt-1 text-xs">
+                  <div className="text-[11px] text-slate-500">
+                    <strong>Roles Available:</strong>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {rec.roles.map((r, i) => (
+                        <span key={i} className="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-[10px]">
+                          {r}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <p className="text-[11px] text-slate-500 mt-2">
+                    <strong>Eligibility:</strong> {rec.eligibility}
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                  <span className="text-[11px] text-slate-400">
+                    Deadline: <strong className="text-slate-700 dark:text-slate-300">{rec.deadline}</strong>
+                  </span>
+
+                  <button
+                    onClick={() => setApplyingForRecruitment(rec)}
+                    className="px-4 py-1.5 rounded-xl bg-campus-600 hover:bg-campus-700 text-white font-bold text-xs flex items-center gap-1 shadow-sm transition"
+                  >
+                    <span>Apply Online</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-          <button
-            onClick={() => {
-              setSelectedCategory('ALL');
-              setSearchQuery('');
-              setRecruitingOnly(false);
-              setJoinedOnly(false);
-            }}
-            className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-lg shadow-purple-600/30 transition-all"
+        </div>
+      )}
+
+      {/* SUBTAB 3: EVENTS & WORKSHOPS */}
+      {activeTab === 'EVENTS' && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {filteredEvents.map(evt => (
+              <div 
+                key={evt.id}
+                className="p-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3 flex flex-col justify-between"
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300">
+                      {evt.clubName}
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-400">{evt.type}</span>
+                  </div>
+
+                  <h4 className="text-sm font-black text-slate-900 dark:text-white">
+                    {evt.title}
+                  </h4>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    {evt.description}
+                  </p>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2 text-xs">
+                  <div className="text-[11px] text-slate-500 space-y-0.5">
+                    <div>📅 {evt.date} • {evt.time}</div>
+                    <div>📍 {evt.venue}</div>
+                  </div>
+
+                  <button 
+                    onClick={() => showToast(`Registered for ${evt.title}! Confirmation sent to student email.`)}
+                    className="w-full py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold hover:opacity-90 transition"
+                  >
+                    Register for Event
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* SUBTAB 4: HACKATHONS */}
+      {activeTab === 'HACKATHONS' && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {filteredHackathons.map(hack => (
+              <div 
+                key={hack.id}
+                className="p-6 rounded-[2rem] border-2 border-indigo-200 dark:border-indigo-900 bg-gradient-to-b from-indigo-50/50 to-white dark:from-slate-900 dark:to-slate-950 shadow-md space-y-4"
+              >
+                <div className="flex items-start justify-between">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-indigo-600 text-white">
+                    {hack.clubName}
+                  </span>
+                  <span className="text-xs font-black text-amber-600">
+                    🏆 {hack.prizePool}
+                  </span>
+                </div>
+
+                <div>
+                  <h4 className="text-base font-black text-slate-900 dark:text-white">
+                    {hack.title}
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-1">Mode: {hack.mode} • Date: {hack.date}</p>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
+                  <span className="font-bold text-slate-500 block mb-1">Themes & Problem Statements:</span>
+                  <p className="text-slate-800 dark:text-slate-200 font-medium">{hack.problemStatements}</p>
+                </div>
+
+                <button 
+                  onClick={() => showToast(`Team registration link opened for ${hack.title}!`)}
+                  className="w-full py-2.5 rounded-xl bg-campus-600 hover:bg-campus-700 text-white font-bold text-xs shadow-md transition"
+                >
+                  Submit Team Entry
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* SUBTAB 5: CLUB ADMIN DASHBOARD (FOR AEGIS, POINTBLANK & CPA LOGINS) */}
+      {activeTab === 'ADMIN' && (
+        <div className="space-y-6 animate-in fade-in">
+          {/* Admin Selector & Actions */}
+          <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950 px-2.5 py-0.5 rounded-full">
+                    Club Admin Management Portal
+                  </span>
+                </div>
+                <h2 className="text-xl font-black text-slate-900 dark:text-white mt-1">
+                  Managing: <span className="text-campus-600">{adminClubName}</span>
+                </h2>
+                <p className="text-xs text-slate-500">Edit what is visible to students, post recruitments, and review applications.</p>
+              </div>
+
+              {/* Club Switcher for testing all 3 admins */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-400">Switch Chapter:</span>
+                {(['AEGIS', 'POINTBLANK', 'CPA'] as const).map(c => (
+                  <button
+                    key={c}
+                    onClick={() => setAdminClubName(c)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-black transition ${
+                      adminClubName === c 
+                        ? 'bg-campus-600 text-white shadow-md' 
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Publish Buttons */}
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => setShowNewRecruitModal(true)}
+                className="px-4 py-2.5 rounded-xl bg-campus-600 hover:bg-campus-700 text-white font-bold text-xs flex items-center gap-2 shadow-md transition"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>Post Recruitment Drive</span>
+              </button>
+
+              <button
+                onClick={() => setShowNewEventModal(true)}
+                className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-2 shadow-md transition"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>Publish Event / Workshop</span>
+              </button>
+
+              <button
+                onClick={() => setShowNewHackModal(true)}
+                className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center gap-2 shadow-md transition"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>Publish Hackathon</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Submitted Student Applications Review Table */}
+          <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div>
+                <h3 className="text-base font-black text-slate-900 dark:text-white">
+                  Student Recruitment Applications ({clubApplications.filter(a => a.clubName.toUpperCase() === adminClubName).length})
+                </h3>
+                <p className="text-xs text-slate-500">Review candidates who applied online for {adminClubName} core team.</p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {clubApplications.filter(a => a.clubName.toUpperCase() === adminClubName).length === 0 ? (
+                <div className="p-8 text-center text-xs text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
+                  No student applications received yet for {adminClubName}.
+                </div>
+              ) : (
+                clubApplications
+                  .filter(a => a.clubName.toUpperCase() === adminClubName)
+                  .map(app => (
+                    <div 
+                      key={app.id}
+                      className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 flex flex-col md:flex-row md:items-start justify-between gap-4"
+                    >
+                      <div className="space-y-1.5 flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-sm font-black text-slate-900 dark:text-white">{app.studentName}</h4>
+                          <span className="font-mono text-xs text-slate-500 font-bold">{app.rollNumber}</span>
+                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                            app.status === 'SHORTLISTED' ? 'bg-amber-100 text-amber-700' :
+                            app.status === 'ACCEPTED' ? 'bg-emerald-100 text-emerald-700' :
+                            app.status === 'REJECTED' ? 'bg-rose-100 text-rose-700' : 'bg-blue-100 text-blue-700'
+                          }`}>
+                            {app.status}
+                          </span>
+                        </div>
+
+                        <p className="text-xs text-indigo-600 font-bold">
+                          Role Applied: {app.roleApplied} • {app.department} (Sem {app.semester})
+                        </p>
+
+                        <div className="text-xs text-slate-600 dark:text-slate-300 space-y-1 pt-1">
+                          <p><strong>Why Join:</strong> {app.whyJoin}</p>
+                          {app.pastExperience && <p><strong>Past Experience:</strong> {app.pastExperience}</p>}
+                          {app.githubOrPortfolio && (
+                            <p className="flex items-center gap-1 text-campus-600">
+                              <ExternalLink className="w-3 h-3" />
+                              <a href={app.githubOrPortfolio} target="_blank" rel="noreferrer" className="underline truncate">
+                                {app.githubOrPortfolio}
+                              </a>
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Status Buttons */}
+                      <div className="flex md:flex-col gap-1.5 shrink-0">
+                        <button
+                          onClick={() => updateClubApplicationStatus(app.id, 'SHORTLISTED')}
+                          className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-bold transition border border-amber-200"
+                        >
+                          Shortlist
+                        </button>
+                        <button
+                          onClick={() => updateClubApplicationStatus(app.id, 'ACCEPTED')}
+                          className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => updateClubApplicationStatus(app.id, 'REJECTED')}
+                          className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition border border-rose-200"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </div>
+                  ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Online Recruitment Application Modal */}
+      {applyingForRecruitment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <form 
+            onSubmit={handleApplySubmit}
+            className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto"
           >
-            Reset Filters
-          </button>
+            <div className="flex items-start justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div>
+                <span className="text-[10px] font-black uppercase text-campus-600 tracking-wider">
+                  Online Recruitment Application
+                </span>
+                <h3 className="text-lg font-black text-slate-900 dark:text-white">
+                  Join {applyingForRecruitment.clubName} Core Team
+                </h3>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setApplyingForRecruitment(null)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Select Domain / Role Applied For: *
+              </label>
+              <select
+                required
+                value={applicationRole}
+                onChange={e => setApplicationRole(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs font-semibold outline-none focus:border-campus-500"
+              >
+                <option value="">-- Choose Role --</option>
+                {applyingForRecruitment.roles.map((r, i) => (
+                  <option key={i} value={r}>{r}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                GitHub / Portfolio / LinkedIn Link:
+              </label>
+              <input
+                type="url"
+                value={githubUrl}
+                onChange={e => setGithubUrl(e.target.value)}
+                placeholder="https://github.com/your-username"
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs outline-none focus:border-campus-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Why do you want to join {applyingForRecruitment.clubName}? *
+              </label>
+              <textarea
+                required
+                rows={3}
+                value={whyJoin}
+                onChange={e => setWhyJoin(e.target.value)}
+                placeholder="Share your motivation, passion for the domain, and what you aim to contribute..."
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs outline-none focus:border-campus-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Past Experience / Relevant Projects / Skills:
+              </label>
+              <textarea
+                rows={2}
+                value={experience}
+                onChange={e => setExperience(e.target.value)}
+                placeholder="Mention any past projects, hackathons, tools, or programming languages..."
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs outline-none focus:border-campus-500"
+              />
+            </div>
+
+            <div className="pt-2 flex gap-2">
+              <button
+                type="submit"
+                className="flex-1 py-2.5 rounded-xl bg-campus-600 hover:bg-campus-700 text-white font-bold text-xs shadow-md transition"
+              >
+                Submit Application Online
+              </button>
+              <button
+                type="button"
+                onClick={() => setApplyingForRecruitment(null)}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* New Recruitment Modal (Admin) */}
+      {showNewRecruitModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <form 
+            onSubmit={handleCreateRecruitment}
+            className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-lg w-full p-6 space-y-4"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-base font-black text-slate-900 dark:text-white">
+                Post Recruitment Drive for {adminClubName}
+              </h3>
+              <button type="button" onClick={() => setShowNewRecruitModal(false)} className="text-slate-400">✕</button>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold mb-1">Drive Title: *</label>
+              <input
+                required
+                value={newRecTitle}
+                onChange={e => setNewRecTitle(e.target.value)}
+                placeholder="e.g. Winter Developer & CTF Induction 2026"
+                className="w-full rounded-xl border p-2 text-xs bg-slate-50 dark:bg-slate-800"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold mb-1">Roles (comma-separated): *</label>
+              <input
+                required
+                value={newRecRoles}
+                onChange={e => setNewRecRoles(e.target.value)}
+                placeholder="Frontend Dev, CTF Player, Security Analyst"
+                className="w-full rounded-xl border p-2 text-xs bg-slate-50 dark:bg-slate-800"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold mb-1">Description: *</label>
+              <textarea
+                required
+                rows={2}
+                value={newRecDesc}
+                onChange={e => setNewRecDesc(e.target.value)}
+                className="w-full rounded-xl border p-2 text-xs bg-slate-50 dark:bg-slate-800"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold mb-1">Deadline Date:</label>
+              <input
+                value={newRecDeadline}
+                onChange={e => setNewRecDeadline(e.target.value)}
+                placeholder="Dec 20, 2026"
+                className="w-full rounded-xl border p-2 text-xs bg-slate-50 dark:bg-slate-800"
+              />
+            </div>
+
+            <div className="pt-2 flex gap-2">
+              <button type="submit" className="flex-1 py-2.5 rounded-xl bg-campus-600 text-white font-bold text-xs">
+                Publish Recruitment Drive
+              </button>
+              <button type="button" onClick={() => setShowNewRecruitModal(false)} className="px-4 py-2.5 rounded-xl border text-xs">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* New Event Modal (Admin) */}
+      {showNewEventModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <form 
+            onSubmit={handleCreateEvent}
+            className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-lg w-full p-6 space-y-4"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-base font-black text-slate-900 dark:text-white">
+                Publish Event / Workshop for {adminClubName}
+              </h3>
+              <button type="button" onClick={() => setShowNewEventModal(false)} className="text-slate-400">✕</button>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold mb-1">Event Title: *</label>
+              <input
+                required
+                value={newEvtTitle}
+                onChange={e => setNewEvtTitle(e.target.value)}
+                placeholder="e.g. Hands-on Docker & Kubernetes Workshop"
+                className="w-full rounded-xl border p-2 text-xs bg-slate-50 dark:bg-slate-800"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-xs font-bold mb-1">Date:</label>
+                <input
+                  value={newEvtDate}
+                  onChange={e => setNewEvtDate(e.target.value)}
+                  placeholder="Dec 15, 2026"
+                  className="w-full rounded-xl border p-2 text-xs bg-slate-50 dark:bg-slate-800"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold mb-1">Venue:</label>
+                <input
+                  value={newEvtVenue}
+                  onChange={e => setNewEvtVenue(e.target.value)}
+                  placeholder="CDS10 Systems Lab"
+                  className="w-full rounded-xl border p-2 text-xs bg-slate-50 dark:bg-slate-800"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold mb-1">Description:</label>
+              <textarea
+                rows={2}
+                value={newEvtDesc}
+                onChange={e => setNewEvtDesc(e.target.value)}
+                className="w-full rounded-xl border p-2 text-xs bg-slate-50 dark:bg-slate-800"
+              />
+            </div>
+
+            <div className="pt-2 flex gap-2">
+              <button type="submit" className="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-xs">
+                Publish Event
+              </button>
+              <button type="button" onClick={() => setShowNewEventModal(false)} className="px-4 py-2.5 rounded-xl border text-xs">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* New Hackathon Modal (Admin) */}
+      {showNewHackModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <form 
+            onSubmit={handleCreateHackathon}
+            className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-lg w-full p-6 space-y-4"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-base font-black text-slate-900 dark:text-white">
+                Publish Hackathon for {adminClubName}
+              </h3>
+              <button type="button" onClick={() => setShowNewHackModal(false)} className="text-slate-400">✕</button>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold mb-1">Hackathon Name: *</label>
+              <input
+                required
+                value={newHackTitle}
+                onChange={e => setNewHackTitle(e.target.value)}
+                placeholder="e.g. CodeBlaze 2027"
+                className="w-full rounded-xl border p-2 text-xs bg-slate-50 dark:bg-slate-800"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-xs font-bold mb-1">Dates:</label>
+                <input
+                  value={newHackDate}
+                  onChange={e => setNewHackDate(e.target.value)}
+                  placeholder="Jan 15 - 17, 2027"
+                  className="w-full rounded-xl border p-2 text-xs bg-slate-50 dark:bg-slate-800"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold mb-1">Prize Pool:</label>
+                <input
+                  value={newHackPrize}
+                  onChange={e => setNewHackPrize(e.target.value)}
+                  placeholder="₹1,00,000"
+                  className="w-full rounded-xl border p-2 text-xs bg-slate-50 dark:bg-slate-800"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold mb-1">Themes & Problem Statements:</label>
+              <textarea
+                rows={2}
+                value={newHackProblems}
+                onChange={e => setNewHackProblems(e.target.value)}
+                placeholder="AI, Smart Cities, Cybersecurity, Distributed Systems"
+                className="w-full rounded-xl border p-2 text-xs bg-slate-50 dark:bg-slate-800"
+              />
+            </div>
+
+            <div className="pt-2 flex gap-2">
+              <button type="submit" className="flex-1 py-2.5 rounded-xl bg-purple-600 text-white font-bold text-xs">
+                Publish Hackathon
+              </button>
+              <button type="button" onClick={() => setShowNewHackModal(false)} className="px-4 py-2.5 rounded-xl border text-xs">
+                Cancel
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>
