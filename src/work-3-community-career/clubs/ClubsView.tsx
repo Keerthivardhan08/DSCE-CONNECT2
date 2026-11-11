@@ -99,6 +99,9 @@ export const ClubsView: React.FC = () => {
     selectedClubForFilter === 'ALL' || h.clubName.toUpperCase() === selectedClubForFilter
   );
 
+  const displayClubs = clubs.filter(c => ['AEGIS', 'POINTBLANK', 'CPA'].includes(c.name?.trim().toUpperCase()));
+  const renderedClubs = displayClubs.length > 0 ? displayClubs : clubs;
+
   const handleApplySubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!applyingForRecruitment || !applicationRole.trim()) {
@@ -307,7 +310,7 @@ export const ClubsView: React.FC = () => {
       {/* SUBTAB 1: 3 CLUBS OVERVIEW */}
       {activeTab === 'CLUBS' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {clubs.map(club => {
+          {renderedClubs.map(club => {
             const clubRecruits = clubRecruitments.filter(r => r.clubId === club.id);
             const clubEvts = clubEvents.filter(e => e.clubId === club.id);
             const clubHacks = clubHackathons.filter(h => h.clubId === club.id);

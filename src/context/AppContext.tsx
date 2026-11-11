@@ -312,8 +312,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [clubs, setClubs] = useState<Club[]>(() => {
-    const saved = localStorage.getItem('campus_clubs');
-    return saved ? JSON.parse(saved) : initialClubs;
+    try {
+      const saved = localStorage.getItem('campus_clubs');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          const valid = parsed.filter((c: Club) => ['AEGIS', 'POINTBLANK', 'CPA'].includes(c.name?.trim().toUpperCase()));
+          if (valid.length > 0) return valid;
+        }
+      }
+    } catch {}
+    return initialClubs;
   });
 
   const [clubRecruitments, setClubRecruitments] = useState<ClubRecruitment[]>(() => {
@@ -455,10 +464,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
           setCampusIssues(data.campusIssues);
           setEvents(data.events);
-          setClubs(data.clubs);
+          if (data.clubs && Array.isArray(data.clubs)) {
+            const validClubs = data.clubs.filter((c: Club) => ['AEGIS', 'POINTBLANK', 'CPA'].includes(c.name?.trim().toUpperCase()));
+            setClubs(validClubs.length > 0 ? validClubs : initialClubs);
+          } else {
+            setClubs(initialClubs);
+          }
           setOpportunities(data.opportunities);
           setProjects(data.projects);
-          setMarketplace(data.marketplace);
+          if (data.marketplace && Array.isArray(data.marketplace)) {
+            setMarketplace(data.marketplace.filter((m: MarketplaceItem) => m.category !== 'LAB_COAT' && !m.title?.toLowerCase().includes('lab coat')));
+          }
           setLostAndFound(data.lostAndFound);
           setLibraryBooks(data.libraryBooks);
           setAnnouncements(data.announcements);
@@ -527,6 +543,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem('campus_events', JSON.stringify(events));
   }, [events]);
+
+  useEffect(() => {
+    const validClubs = clubs.filter((c: Club) => ['AEGIS', 'POINTBLANK', 'CPA'].includes(c.name?.trim().toUpperCase()));
+    localStorage.setItem('campus_clubs', JSON.stringify(validClubs.length > 0 ? validClubs : initialClubs));
+  }, [clubs]);
+
+  useEffect(() => {
+    localStorage.setItem('campus_club_recruitments', JSON.stringify(clubRecruitments));
+  }, [clubRecruitments]);
+
+  useEffect(() => {
+    localStorage.setItem('campus_club_events', JSON.stringify(clubEvents));
+  }, [clubEvents]);
+
+  useEffect(() => {
+    localStorage.setItem('campus_club_hackathons', JSON.stringify(clubHackathons));
+  }, [clubHackathons]);
+
+  useEffect(() => {
+    localStorage.setItem('campus_club_applications', JSON.stringify(clubApplications));
+  }, [clubApplications]);
 
   useEffect(() => {
     localStorage.setItem('campus_projects', JSON.stringify(projects));

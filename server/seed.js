@@ -314,10 +314,9 @@ export function seedInitialData() {
     INSERT INTO clubs (id, name, category, description, lead_name, members_count, is_joined, recruitment_open, recruitment_deadline, badge)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
-  insertClub.run('club_01', 'ACM Student Chapter', 'TECH', 'Premier technical student organization hosting weekly coding jams and open-source nights.', 'Aravind K. (4th Year CSE)', 230, 1, 1, 'Oct 20, 2026', 'Verified Official');
-  insertClub.run('club_02', 'Robotics & Automation Society (RAS)', 'TECH', 'Hands-on robotics lab designing combat bots, autonomous drones, and rovers.', 'Meera Pillai (3rd Year ECE)', 145, 0, 1, 'Oct 18, 2026', 'Verified Official');
-  insertClub.run('club_03', 'Design Guild & UI/UX Club', 'CULTURAL', 'Community for designers, product thinkers, and Figma wizards.', 'Tanvi Shah (3rd Year Des)', 95, 0, 0, null, 'Verified Official');
-  insertClub.run('club_04', 'Rotaract Youth Club', 'SOCIAL', 'Social welfare organization conducting campus blood donation camps and drives.', 'Rohan Deshmukh (4th Year Mech)', 310, 1, 1, 'Oct 25, 2026', 'Verified Official');
+  insertClub.run('club_aegis', 'AEGIS', 'TECH', 'Official Information Science & Cyber Security Chapter of DSCE. Dedicated to ethical hacking, CTF challenges, red/blue teaming, security audits, and offensive & defensive labs.', 'Aditya Sharma (Club Lead)', 140, 1, 1, 'Dec 15, 2026', 'Official Cyber Security Chapter');
+  insertClub.run('club_pointblank', 'POINTBLANK', 'TECH', 'DSCE Premier Student Coding & Algorithms Community. Organizing national collegiate hackathons, algorithmic contests, open-source projects, and systems development workshops.', 'Rohan Gupta (President)', 195, 0, 1, 'Dec 12, 2026', 'Premier Dev Guild');
+  insertClub.run('club_cpa', 'CPA', 'TECH', 'Club of Programming & Algorithms / Creative Professionals Association. Accelerating software craftsmanship, technical paper presentations, hackathons, and student tech mentorship.', 'Sneha Rao (Convenor)', 110, 0, 1, 'Dec 20, 2026', 'Verified Technical Chapter');
 
   // 7. Opportunities
   const insertOpp = db.prepare(`
@@ -348,7 +347,7 @@ export function seedInitialData() {
   `);
   insertMarket.run('mkt_01', 'usr_vikram_005', 'Vikram Joshi', '21ME042', 'SELL', 'CALCULATOR', 'Casio fx-991EX ClassWiz Scientific Calculator (Mint Condition)', 'Graduating senior selling my genuine Casio ClassWiz. With slide-on case.', 650, JSON.stringify(['https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?w=300&auto=format&fit=crop&q=80']), 'ACTIVE', 'Yesterday');
   insertMarket.run('mkt_02', 'usr_anjali_008', 'Anjali Sharma', '22CS019', 'SELL', 'BOOKS', 'Database System Concepts (Silberschatz) 7th Edition Hardcover', 'Standard textbook for CS301. Clean pages with minimal highlights.', 450, JSON.stringify(['https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300&auto=format&fit=crop&q=80']), 'ACTIVE', '2 days ago');
-  insertMarket.run('mkt_03', 'usr_keerthi_001', 'Keerthi V. (You)', '22CS084', 'FREE', 'LAB_COAT', 'White Chemistry / Workshop Lab Coat (Size Large)', 'Free giveaway to 1st or 2nd year student. Clean, freshly washed, zero tears.', 0, JSON.stringify(['https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=300&auto=format&fit=crop&q=80']), 'ACTIVE', '3 days ago');
+  insertMarket.run('mkt_03', 'usr_keerthi_001', 'Keerthi V. (You)', '22CS084', 'SELL', 'BOOKS', 'Higher Engineering Mathematics by B.S. Grewal (44th Edition)', 'Standard mathematics textbook for engineering semesters. Clean pages, hardcover edition.', 450, JSON.stringify(['https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300&auto=format&fit=crop&q=80']), 'ACTIVE', '3 days ago');
 
   // 10. Lost and Found
   const insertLnf = db.prepare(`

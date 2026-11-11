@@ -18,9 +18,11 @@ import {
   BookOpen,
   MapPin,
   Users,
+  Users2,
   GraduationCap,
   Megaphone
 } from 'lucide-react';
+import { initialClubs } from '../../data/mockData';
 import { 
   CYBER_SECURITY_SEM3_TIMETABLE, 
   CYBER_SECURITY_SEM3_METADATA, 
@@ -35,12 +37,16 @@ export const StudentDashboard: React.FC = () => {
     assignments, 
     campusIssues, 
     events, 
+    clubs,
     opportunities, 
     announcements, 
     setActiveTab,
     setIsPendingIdVerification,
     reopenIssue
   } = useApp();
+
+  const filteredClubs = clubs.filter(c => ['AEGIS', 'POINTBLANK', 'CPA'].includes(c.name?.trim().toUpperCase()));
+  const dashboardClubs = filteredClubs.length > 0 ? filteredClubs : initialClubs;
 
   const [reopenModalIssueId, setReopenModalIssueId] = useState<string | null>(null);
   const [reopenReason, setReopenReason] = useState('');
@@ -705,6 +711,55 @@ export const StudentDashboard: React.FC = () => {
                     <span>{opp.organization}</span>
                     <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                       {opp.rewardOrStipend || 'Certificate'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Clubs & Chapters Overview (AEGIS, POINTBLANK, CPA) */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs space-y-3">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <Users2 className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+                  Clubs & Chapters Overview
+                </h3>
+              </div>
+              <button 
+                onClick={() => setActiveTab('clubs')}
+                className="text-xs text-campus-600 dark:text-campus-400 font-semibold hover:underline flex items-center gap-1"
+              >
+                Explore <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="space-y-2.5">
+              {dashboardClubs.map(club => (
+                <div 
+                  key={club.id} 
+                  onClick={() => setActiveTab('clubs')}
+                  className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 space-y-1.5 cursor-pointer hover:border-cyan-500/50 hover:bg-cyan-50/20 dark:hover:bg-cyan-950/20 transition group"
+                >
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="font-black px-2 py-0.5 rounded-md bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300">
+                      {club.name}
+                    </span>
+                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
+                      {club.recruitmentOpen ? 'Recruitment Open' : 'Active'}
+                    </span>
+                  </div>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition">
+                    {club.badge}
+                  </h4>
+                  <p className="text-[11px] text-slate-500 line-clamp-1">
+                    {club.description}
+                  </p>
+                  <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5 border-t border-slate-200/50 dark:border-slate-800">
+                    <span>{club.membersCount} Members</span>
+                    <span className="text-campus-600 font-bold group-hover:translate-x-0.5 transition-transform inline-flex items-center gap-0.5">
+                      View Chapter →
                     </span>
                   </div>
                 </div>
