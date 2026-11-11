@@ -357,6 +357,9 @@ export interface PrintFile {
   name: string;
   type: string;
   sizeBytes: number;
+  fileUrl?: string;
+  fileData?: string;
+  textContent?: string;
 }
 
 export interface PrintRates {

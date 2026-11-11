@@ -95,6 +95,14 @@ export const PrintlnView: React.FC = () => {
   // Active placed bill view
   const [placedOrder, setPlacedOrder] = useState<PrintOrder | null>(null);
   const [inspectingBillOrder, setInspectingBillOrder] = useState<PrintOrder | null>(null);
+  const [printingReceipt, setPrintingReceipt] = useState<PrintOrder | null>(null);
+
+  const handlePrintReceipt = (order: PrintOrder) => {
+    setPrintingReceipt(order);
+    setTimeout(() => {
+      window.print();
+    }, 200);
+  };
 
   const draft = { files, pageCount, layout, colorMode, binding, copies, readyBy };
   const totalAmount = useMemo(() => getPrintAmount(draft, printRates), [binding, colorMode, copies, layout, pageCount, files, readyBy, printRates]);
@@ -104,12 +112,48 @@ export const PrintlnView: React.FC = () => {
   const readyOrders = myOrders.filter(order => order.status === 'READY_FOR_PICKUP' && !order.notificationRead);
 
   const handleFiles = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = Array.from(event.target.files || []).map(file => ({
-      name: file.name,
-      type: file.type || 'application/octet-stream',
-      sizeBytes: file.size,
-    }));
-    setFiles(prev => [...prev, ...selected]);
+    const rawFiles = Array.from(event.target.files || []);
+    if (rawFiles.length === 0) return;
+
+    rawFiles.forEach(file => {
+      const blobUrl = URL.createObjectURL(file);
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        const newPrintFile: PrintFile = {
+          name: file.name,
+          type: file.type || 'application/octet-stream',
+          sizeBytes: file.size,
+          fileUrl: blobUrl,
+          fileData: dataUrl
+        };
+        setFiles(prev => [...prev, newPrintFile]);
+      };
+
+      reader.onerror = () => {
+        const newPrintFile: PrintFile = {
+          name: file.name,
+          type: file.type || 'application/octet-stream',
+          sizeBytes: file.size,
+          fileUrl: blobUrl
+        };
+        setFiles(prev => [...prev, newPrintFile]);
+      };
+
+      // Read small/medium files as DataURL for offline persistence, or use blobUrl
+      if (file.size < 8 * 1024 * 1024) {
+        reader.readAsDataURL(file);
+      } else {
+        const newPrintFile: PrintFile = {
+          name: file.name,
+          type: file.type || 'application/octet-stream',
+          sizeBytes: file.size,
+          fileUrl: blobUrl
+        };
+        setFiles(prev => [...prev, newPrintFile]);
+      }
+    });
   };
 
   const removeFile = (index: number) => {
@@ -248,7 +292,7 @@ export const PrintlnView: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => window.print()}
+                onClick={() => handlePrintReceipt(placedOrder)}
                 className="px-4 py-2.5 rounded-xl bg-campus-600 hover:bg-campus-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md"
               >
                 <Printer className="w-3.5 h-3.5" />
@@ -880,7 +924,7 @@ export const PrintlnView: React.FC = () => {
 
             <div className="flex gap-2 pt-2">
               <button
-                onClick={() => window.print()}
+                onClick={() => handlePrintReceipt(inspectingBillOrder)}
                 className="flex-1 py-2.5 rounded-xl bg-campus-600 hover:bg-campus-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md"
               >
                 <Printer className="w-3.5 h-3.5" />
@@ -892,6 +936,32 @@ export const PrintlnView: React.FC = () => {
               >
                 Done
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ISOLATED PRINTABLE RECEIPT (VISIBLE ONLY ON PRINT) */}
+      {printingReceipt && (
+        <div id="printable-document-content" className="hidden print:block">
+          <div className="p-8 text-black bg-white max-w-lg mx-auto border-2 border-black font-sans">
+            <div className="border-b-2 border-black pb-3 mb-4">
+              <h1 className="text-xl font-black">DAYANANDA SAGAR COLLEGE OF ENGINEERING</h1>
+              <p className="text-xs font-bold text-slate-700">Println Reprographics • Official Student Order Receipt</p>
+            </div>
+            <div className="space-y-2 text-xs">
+              <p><strong>Order ID:</strong> {printingReceipt.id}</p>
+              <p><strong>Print Shop:</strong> {printingReceipt.shopName || 'DSCE Main Xerox'}</p>
+              <p><strong>Student:</strong> {printingReceipt.studentName} ({printingReceipt.studentRoll})</p>
+              <p><strong>Files:</strong> {printingReceipt.files.map(f => f.name).join(', ')}</p>
+              <p><strong>Mode:</strong> {printingReceipt.colorMode === 'COLOR' ? 'Colour Print' : 'Black & White'}</p>
+              <p><strong>Layout:</strong> {printLayoutLabels[printingReceipt.layout]}</p>
+              <p><strong>Binding:</strong> {printBindingLabels[printingReceipt.binding]}</p>
+              <p><strong>Copies:</strong> {printingReceipt.copies}</p>
+              <p><strong>Total Amount Collected:</strong> ₹{printingReceipt.totalAmount}</p>
+            </div>
+            <div className="border-t border-black pt-3 mt-4 text-[10px] text-slate-500 text-center">
+              Present this Order ID at the counter to collect your printed documents.
             </div>
           </div>
         </div>
