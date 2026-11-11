@@ -295,7 +295,7 @@ export const AppContent: React.FC = () => {
             </div>
 
             <div className="pt-4 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 text-center">
-              Campus OS V1 • One-College System
+              DSCE Connect 2.0 • Dayananda Sagar College of Engineering
             </div>
           </div>
         </div>

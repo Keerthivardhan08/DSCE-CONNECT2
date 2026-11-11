@@ -134,12 +134,12 @@ export const LoginView: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-lg tracking-tight text-slate-900 dark:text-white">Campus OS</span>
+              <span className="font-extrabold text-lg tracking-tight text-slate-900 dark:text-white">DSCE Connect</span>
               <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-campus-100 text-campus-700 dark:bg-campus-950 dark:text-campus-300 border border-campus-300 dark:border-campus-800">
                 RBAC Active
               </span>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Integrated College Operating System</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Dayananda Sagar College of Engineering</p>
           </div>
         </div>
 
@@ -163,7 +163,7 @@ export const LoginView: React.FC = () => {
               Sign in with your verified campus role.
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-              Campus OS provides isolated dashboards and permissions for students, Xerox operators, maintenance staff, and administration.
+              DSCE Connect provides isolated dashboards and permissions for students, Xerox operators, maintenance staff, and administration.
             </p>
           </div>
 
@@ -576,7 +576,7 @@ export const LoginView: React.FC = () => {
 
       {/* Footer System Disclaimer */}
       <div className="max-w-6xl w-full mx-auto text-center text-slate-400 text-[11px] py-4 border-t border-slate-200/50 dark:border-slate-800/50 flex flex-col sm:flex-row items-center justify-between gap-2">
-        <span>Campus OS V1 • Protected by 256-bit Institutional Role-Based Access Control (RBAC)</span>
+        <span>DSCE Connect 2.0 • Dayananda Sagar College of Engineering</span>
         <span>Default Student: <code className="font-mono text-campus-600 dark:text-campus-400">22CS084</code> / <code className="font-mono text-campus-600 dark:text-campus-400">student123</code></span>
       </div>
 

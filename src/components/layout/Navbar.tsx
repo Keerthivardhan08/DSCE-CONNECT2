@@ -61,12 +61,12 @@ export const Navbar: React.FC = () => {
             </div>
             <div className="cursor-pointer" onClick={() => setActiveTab('dashboard')}>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-base tracking-tight text-slate-900 dark:text-white">Campus OS</span>
+                <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">DSCE Connect</span>
                 <span className="hidden sm:inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full bg-campus-50 text-campus-600 dark:bg-campus-950 dark:text-campus-400 border border-campus-200 dark:border-campus-800">
                   {currentUser.department.split(' ')[0]}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block">National Institute Campus Network</p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block">Dayananda Sagar College of Engineering</p>
             </div>
           </div>
 
@@ -193,7 +193,7 @@ export const Navbar: React.FC = () => {
             <button
               onClick={logout}
               className="p-2 rounded-xl text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition border border-transparent hover:border-rose-200 dark:hover:border-rose-900"
-              title="Sign Out of Campus OS"
+              title="Sign Out of DSCE Connect"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -227,7 +227,7 @@ export const Navbar: React.FC = () => {
               </button>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 mb-4">
-              Select any stakeholder role to experience the Campus OS from their verified authorization level:
+              Select any stakeholder role to experience DSCE Connect from their verified authorization level:
             </p>
 
             <div className="space-y-2 max-h-96 overflow-y-auto pr-1">

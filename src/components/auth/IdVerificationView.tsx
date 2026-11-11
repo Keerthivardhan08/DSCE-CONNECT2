@@ -162,7 +162,7 @@ export const IdVerificationView: React.FC<IdVerificationViewProps> = ({ onComple
                 </>
               ) : (
                 <>
-                  <span>Submit ID & Enter Campus OS</span>
+                  <span>Submit ID & Enter DSCE Connect</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}

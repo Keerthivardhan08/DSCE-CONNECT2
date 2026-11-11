@@ -679,7 +679,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCurrentUser(initialCurrentUser);
     setCurrentRole('STUDENT');
     setActiveTab('dashboard');
-    showToast('Signed out of Campus OS.');
+    showToast('Signed out of DSCE Connect.');
   };
 
   const completeIdVerification = () => {
@@ -747,7 +747,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         semester: data.semester,
         hostelBlock: data.hostelBlock || '',
         roomNumber: data.roomNumber || '',
-        bio: 'Student at Campus OS.',
+        bio: 'Student at Dayananda Sagar College of Engineering.',
         skills: ['Teamwork', 'Problem Solving'],
         interests: ['Technology', 'Academics'],
         collaborationGoals: ['Study Buddy'],

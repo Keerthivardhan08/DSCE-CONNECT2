@@ -406,7 +406,7 @@ export const initialClubHackathons: ClubHackathonItem[] = [
     mode: 'OFFLINE',
     prizePool: '₹1,50,000 + Internship Opportunities',
     registrationDeadline: 'Dec 25, 2026',
-    problemStatements: 'FinTech, Web3, Smart Campus OS, HealthTech, AI Agents & Edge Computing',
+    problemStatements: 'FinTech, Web3, Smart Campus Solutions, HealthTech, AI Agents & Edge Computing',
     registrationLink: 'https://codeblaze.pointblank.club'
   },
   {
